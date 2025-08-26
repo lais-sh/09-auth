@@ -1,4 +1,4 @@
-:root {
+:global(:root) {
   --bg: #ffffff;
   --fg: #111827;
   --muted: #6b7280;
@@ -11,7 +11,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :global(:root) {
     --bg: #0b1220;
     --fg: #e5e7eb;
     --muted: #9ca3af;

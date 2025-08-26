@@ -1,4 +1,4 @@
-:root {
+:global(:root) {
   --overlay: rgba(17, 24, 39, 0.55);
   --bg: #ffffff;
   --fg: #111827;
@@ -11,7 +11,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+:global(:root) {
     --overlay: rgba(0, 0, 0, 0.6);
     --bg: #0b1020;
     --fg: #e5e7eb;
