@@ -1,0 +1,104 @@
+.searchBox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  padding: 6px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.searchBox:focus-within {
+  border-color: #6ea8fe;
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.25);
+  background: #fff;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 8px 36px 8px 10px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #0b0f14;
+}
+
+.input::placeholder {
+  color: #8c96a0;
+}
+.input[type="search"]::-webkit-search-decoration,
+.input[type="search"]::-webkit-search-cancel-button,
+.input[type="search"]::-webkit-search-results-button,
+.input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.clearButton {
+  position: absolute;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.clearButton:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.clearButton:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 2px;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+  .searchBox {
+    border-color: #2b323b;
+    background: #0f141a;
+    box-shadow: none;
+  }
+  .searchBox:focus-within {
+    border-color: #6ea8fe;
+    box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.25);
+    background: #0f141a;
+  }
+  .input {
+    color: #e6edf3;
+  }
+  .input::placeholder {
+    color: #7d8691;
+  }
+  .clearButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .searchBox,
+  .clearButton {
+    transition: none;
+  }
+}

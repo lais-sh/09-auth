@@ -1,0 +1,149 @@
+.main,
+.page {
+  flex-grow: 1;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 48px) 16px;
+  background: linear-gradient(180deg, #fafafa 0%, #f4f6f8 100%);
+}
+
+.section {
+  width: min(92%, 960px);
+  margin: 0 auto;
+  padding: clamp(24px, 3vw, 40px);
+  background: #ffffff;
+  border: 1px solid #e9eef3;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.06);
+}
+
+.heading {
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 20px;
+  text-align: center;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
+}
+
+.text {
+  font-size: clamp(16px, 1.6vw, 18px);
+  color: #4b5563;
+  line-height: 1.8;
+  margin: 0 0 16px;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.ctaButton,
+.secondaryButton {
+  --btn-bg: #111827;
+  --btn-fg: #ffffff;
+  --btn-border: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  outline: none;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+    background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+.ctaButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+}
+
+.ctaButton:focus-visible,
+.secondaryButton:focus-visible {
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.secondaryButton {
+  --btn-bg: #ffffff;
+  --btn-fg: #111827;
+  --btn-border: #e5e7eb;
+}
+
+.secondaryButton:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 20px;
+  }
+  .actions {
+    gap: 10px;
+  }
+  .ctaButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaButton,
+  .secondaryButton {
+    transition: none;
+  }
+  .ctaButton:hover,
+  .secondaryButton:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .main,
+  .page {
+    background: linear-gradient(180deg, #0b1220 0%, #0e1626 100%);
+  }
+
+  .section {
+    background: #0f172a;
+    border-color: #1f2a44;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .heading {
+    color: #e5e7eb;
+  }
+
+  .text {
+    color: #cbd5e1;
+  }
+
+  .secondaryButton {
+    --btn-bg: #111827;
+    --btn-fg: #ffffff;
+    --btn-border: #30363d;
+  }
+
+  .secondaryButton:hover {
+    border-color: #475569;
+  }
+}

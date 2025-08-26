@@ -1,0 +1,106 @@
+.wrapper {
+  --bg: #f8fafc;
+  --bg-2: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --accent-600: #1d4ed8;
+  --accent-700: #1e40af;
+  --ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+  color-scheme: light dark;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  background:
+    radial-gradient(800px 400px at 0% -10%, rgba(37, 99, 235, 0.08), transparent 60%),
+    radial-gradient(800px 400px at 110% 0%, rgba(37, 99, 235, 0.08), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+}
+
+.title {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.text {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 28px;
+  max-width: 60ch;
+  margin-inline: auto;
+}
+
+.link {
+  --btn-bg: var(--accent);
+  --btn-bg-hover: var(--accent-600);
+  --btn-bg-active: var(--accent-700);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  color: #fff;
+  background: linear-gradient(180deg, var(--btn-bg), var(--btn-bg-hover));
+  padding: 12px 22px;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.1);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.link:hover {
+  background: linear-gradient(180deg, var(--btn-bg-hover), var(--btn-bg-active));
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.16);
+}
+
+.link:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(2, 6, 23, 0.12);
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: rgba(37, 99, 235, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .wrapper {
+    --bg: #0b1220;
+    --bg-2: #0b1020;
+    --text: #e5e7eb;
+    --muted: #9aa4b2;
+    background:
+      radial-gradient(800px 400px at 0% -10%, rgba(59, 130, 246, 0.2), transparent 60%),
+      radial-gradient(800px 400px at 110% 0%, rgba(59, 130, 246, 0.18), transparent 55%),
+      linear-gradient(180deg, var(--bg), var(--bg-2));
+  }
+  .link {
+    box-shadow: 0 8px 22px rgba(2, 6, 23, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

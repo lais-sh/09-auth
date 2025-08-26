@@ -1,0 +1,114 @@
+.app {
+  --container-max: 1280px;
+  --space-1: 8px;
+  --space-2: 12px;
+  --space-3: 16px;
+  --radius: 12px;
+
+  --accent-h: 221;
+  --accent-s: 83%;
+  --accent-l: 53%;
+  --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
+  --accent-hover: hsl(var(--accent-h), var(--accent-s), 47%);
+  --accent-active: hsl(var(--accent-h), var(--accent-s), 43%);
+
+  color-scheme: light dark;
+
+  width: 90%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-3) var(--space-3);
+  flex: 1;
+}
+
+.toolbar {
+  margin: var(--space-3) 0 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
+
+.title {
+  font-size: clamp(20px, 1.2vw + 1rem, 28px);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.actions > :first-child {
+  flex: 1 1 min(480px, 65vw);
+  min-width: 240px;
+}
+
+.button {
+  appearance: none;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #fff;
+  background-color: var(--accent);
+  cursor: pointer;
+
+  box-shadow: 0 1px 1px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.08);
+  transition:
+    background-color .2s ease,
+    box-shadow .2s ease,
+    transform .05s ease;
+}
+
+.button:hover {
+  background-color: var(--accent-hover);
+}
+
+.button:active {
+  background-color: var(--accent-active);
+  transform: translateY(1px);
+}
+
+.button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 30%, white);
+  outline-offset: 2px;
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+@media (prefers-color-scheme: dark) {
+  .button {
+    box-shadow: 0 1px 1px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

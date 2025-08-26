@@ -1,0 +1,216 @@
+.list {
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-hover-border: #d1d5db;
+  --shadow-sm: 0 2px 8px rgba(2, 6, 23, 0.06);
+  --shadow-md: 0 6px 16px rgba(2, 6, 23, 0.12);
+  --text-strong: #1f2937;
+  --text-muted: #4b5563;
+  --brand: #2563eb;
+  --brand-ring: 37 99 235; 
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.listItem {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  gap: 10px;
+
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  will-change: transform, box-shadow;
+}
+
+.listItem:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--card-hover-border);
+}
+.listItem:focus-within {
+  outline: 2px solid transparent;
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 3px rgba(var(--brand-ring) / 0.35);
+  border-color: var(--card-hover-border);
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+  color: inherit; 
+}
+
+.link:focus {
+  outline: none;
+}
+
+.title {
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: var(--text-strong);
+}
+
+.content {
+  margin: 0 0 8px 0;
+  flex-grow: 1;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b3bda;
+  background-color: #e8efff;
+  border: 1px solid #cfe0ff;
+  border-radius: 9999px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag[data-tag="Work"] {
+  color: #1f6f3f;
+  background: #e7f7ed;
+  border-color: #ccebd8;
+}
+.tag[data-tag="Personal"] {
+  color: #9a3412;
+  background: #fff1e6;
+  border-color: #ffd8b5;
+}
+.tag[data-tag="Shopping"] {
+  color: #6b21a8;
+  background: #f3e8ff;
+  border-color: #e9d5ff;
+}
+.tag[data-tag="Todo"] {
+  color: #0b3bda;
+  background: #e8efff;
+  border-color: #cfe0ff;
+}
+
+.button {
+  align-self: flex-end;
+  padding: 8px 14px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+
+  color: #ffffff;
+  background-color: var(--danger);
+  border: none;
+
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  touch-action: manipulation;
+}
+
+.button:hover {
+  background-color: var(--danger-hover);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.35);
+}
+
+.button[disabled],
+.button[aria-disabled="true"] {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px 0;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .listItem { padding: 14px; }
+  .title { font-size: 16px; }
+  .content {
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listItem,
+  .button {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .listItem {
+    border: 1px solid CanvasText;
+  }
+  .button {
+    border: 1px solid ButtonText;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .list {
+    --card-bg: #0b1220;
+    --card-border: #1f2937;
+    --card-hover-border: #374151;
+    --text-strong: #e5e7eb;
+    --text-muted: #cbd5e1;
+  }
+
+  .listItem {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .tag {
+    color: #93c5fd;
+    background-color: #0b1220;
+    border-color: #1d4ed8;
+  }
+}
