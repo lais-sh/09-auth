@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { proxyJson } from "../../api";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
-  return proxyJson(req, `/notes/${params.id}`);
+  const { id } = await params;
+  return proxyJson(req, `/notes/${id}`);
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  return proxyJson(req, `/notes/${params.id}`, { method: "DELETE" });
+  const { id } = await params;
+  return proxyJson(req, `/notes/${id}`, { method: "DELETE" });
 }

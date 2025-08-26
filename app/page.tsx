@@ -10,8 +10,14 @@ export const metadata: Metadata = {
     "Lightweight, intuitive note manager with authentication, tags, and search.",
 };
 
+
 export default async function HomePage() {
-  const user = await serverFetch<User | undefined>("/auth/session");
+  let user: User | undefined = undefined;
+  try {
+    user = await serverFetch<User | undefined>("/auth/session");
+  } catch {
+    user = undefined;
+  }
 
   return (
     <main className={styles.main}>

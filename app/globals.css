@@ -1,8 +1,5 @@
-/* ---------- БАЗОВЫЕ ПЕРЕМЕННЫЕ (light) ---------- */
 :root {
   color-scheme: light dark;
-
-  /* Палитра */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-elevated: #f1f5f9;
@@ -14,21 +11,16 @@
   --color-danger: #ef4444;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
-
-  /* Фокус/тени/радиусы/инерции */
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
   --radius-sm: 8px;
   --radius-lg: 12px;
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 2px 8px rgba(15, 23, 42, 0.10);
+  --shadow-md: 0 2px 8px rgba(15, 23, 42, 0.1);
   --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.12);
   --transition: 0.2s ease;
-
-  /* Типографика/сетка/отступы */
   --font-sans: var(--font-roboto, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol");
   --leading: 1.55;
   --container: 1120px;
-
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -37,8 +29,6 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
-
-  /* Loader (light) */
   --loader-size: 56px;
   --loader-color: #4b6cb7;
   --loader-track: rgba(75, 108, 183, 0.18);
@@ -47,7 +37,6 @@
   --loader-text: #6b7280;
 }
 
-/* ---------- ТЁМНАЯ ТЕМА ЧЕРЕЗ data-атрибут ---------- */
 [data-theme="dark"] {
   --color-bg: #0b1220;
   --color-surface: #0f172a;
@@ -61,14 +50,11 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
-
-  /* Loader (dark) */
   --loader-color: #7aa2ff;
   --loader-track: rgba(255, 255, 255, 0.12);
   --loader-text: #9ca3af;
 }
 
-/* ---------- АВТО ТЁМНАЯ ТЕМА ПО СИСТЕМЕ ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-bg: #0b1220;
@@ -83,15 +69,12 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
-
-    /* Loader (dark) */
     --loader-color: #7aa2ff;
     --loader-track: rgba(255, 255, 255, 0.12);
     --loader-text: #9ca3af;
   }
 }
 
-/* ---------- БАЗОВЫЕ СБРОСЫ И УТИЛИТЫ ---------- */
 *,
 *::before,
 *::after { box-sizing: border-box; }

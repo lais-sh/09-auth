@@ -1,25 +1,26 @@
 import axios, { AxiosError } from "axios";
 
 const isServer = typeof window === "undefined";
+
 const envOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
+const DEFAULT_SERVER_ORIGIN = "http://127.0.0.1:3000";
+
 if (isServer && process.env.NODE_ENV === "production" && !envOrigin) {
-  throw new Error(
-    "NEXT_PUBLIC_API_URL is not set on the server in production. " +
+  console.warn(
+    "WARN: NEXT_PUBLIC_API_URL is not set in production. " +
       "Set it to your deployed origin, e.g. https://<your-app>.vercel.app"
   );
 }
 
-export const APP_ORIGIN =
-  envOrigin ||
-  (!isServer ? window.location.origin : "http://localhost:3000");
+const baseURL = isServer
+  ? `${envOrigin || DEFAULT_SERVER_ORIGIN}/api`
+  : "/api";
 
 export const api = axios.create({
-  baseURL: `${APP_ORIGIN}/api`,
-  withCredentials: true, 
-  headers: {
-    Accept: "application/json",
-  },
+  baseURL,
+  withCredentials: true,
+  headers: { Accept: "application/json" },
   timeout: 15000,
   validateStatus: (status) => status >= 200 && status < 300,
 });
@@ -29,11 +30,12 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (process.env.NODE_ENV !== "production") {
       const cfg = error.config;
+      const b =
+        (cfg?.baseURL ? String(cfg.baseURL).replace(/\/$/, "") : "") +
+        (cfg?.url || "");
       console.error("API error", {
         method: cfg?.method,
-        url:
-          (cfg?.baseURL ? cfg.baseURL.replace(/\/$/, "") : "") +
-          (cfg?.url || ""),
+        url: b,
         status: error.response?.status,
         data: error.response?.data,
         message: error.message,
