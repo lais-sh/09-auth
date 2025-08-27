@@ -1,14 +1,22 @@
 import { serverFetch } from "@/lib/api/serverApi";
 import type { Note } from "@/types/note";
 
+type NotesSearchParams = {
+  search?: string;
+  page?: string;
+  tag?: string;
+};
+
 export default async function NotesPage({
   searchParams,
 }: {
-  searchParams?: { search?: string; page?: string; tag?: string };
+  searchParams?: Promise<NotesSearchParams>;
 }) {
-  const search = searchParams?.search ?? "";
-  const tag = searchParams?.tag ?? "";
-  const page = Number(searchParams?.page ?? "1");
+  const sp = (await searchParams) ?? {};
+
+  const search = sp.search ?? "";
+  const tag = sp.tag ?? "";
+  const page = Number.parseInt(sp.page ?? "1", 10) || 1;
 
   const qs = new URLSearchParams();
   if (search) qs.set("search", search);
@@ -16,5 +24,11 @@ export default async function NotesPage({
   qs.set("page", String(page));
   qs.set("perPage", "12");
 
-  const initialData = await serverFetch<Note[]>(`/notes?${qs.toString()}`);
+  const notes = await serverFetch<Note[]>(`/notes?${qs.toString()}`);
+
+  return (
+    <main style={{ padding: 16 }}>
+      <p>Found {Array.isArray(notes) ? notes.length : 0} notes</p>
+    </main>
+  );
 }
