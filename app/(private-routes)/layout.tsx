@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "Profile | NoteHub",
-  description: "User profile section",
+  title: { default: "Private | NoteHub", template: "%s | NoteHub" },
+  description: "User private section",
 };
 
-export default function ProfileLayout({
+export default function PrivateRoutesLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal?: React.ReactNode;
 }) {
-  return (
-    <>
-      {children}
-      {modal}
-    </>
-  );
+  return <AuthProvider>{children}</AuthProvider>;
 }
+
