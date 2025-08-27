@@ -9,19 +9,16 @@ import { useAuthStore } from "@/lib/store/authStore";
 
 const DEFAULT_AFTER_LOGIN: Route = "/profile";
 
-/** Преобразуем ?from= к безопасному Route для typedRoutes */
 function resolveRedirect(sp: ReturnType<typeof useSearchParams>): Route {
   const raw = sp.get("from");
   if (!raw) return DEFAULT_AFTER_LOGIN;
 
   try {
-    // Парсим и относительные, и абсолютные значения
     const url = new URL(raw, "http://localhost");
     const p = url.pathname;
 
-    // Разрешаем ТОЛЬКО известные приватные пути
     if (p === "/profile" || p === "/notes" || p.startsWith("/notes/")) {
-      return p as Route; // сужаем вручную — валидно для typedRoutes
+      return p as Route; 
     }
   } catch {
     /* ignore */
@@ -48,8 +45,8 @@ export default function SignInPage() {
       setUser(user);
       router.refresh();
 
-      const to: Route = resolveRedirect(sp); // ← типобезопасный Route
-      router.replace(to);                    // ← больше НЕ string
+      const to: Route = resolveRedirect(sp);
+      router.replace(to);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Login failed");
     }
