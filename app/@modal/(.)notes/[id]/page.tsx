@@ -6,10 +6,12 @@ import NoteDetailsClient from "./NoteDetails.client";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { params: { id: string } };
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
 export default async function NoteModalPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params; 
 
   const qc = new QueryClient();
 
