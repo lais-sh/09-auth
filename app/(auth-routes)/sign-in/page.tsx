@@ -90,7 +90,11 @@ export default function SignInPage() {
           </button>
         </div>
 
-        {localError && <p className={css.error}>{localError}</p>}
+        {localError && (
+          <p className={css.error} role="alert" aria-live="assertive">
+            {localError}
+          </p>
+        )}
       </form>
     </main>
   );

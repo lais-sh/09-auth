@@ -15,13 +15,14 @@ export default function SidebarNotes({ categories }: SidebarNotesProps) {
   const makeHref = (tag?: string) => {
     const params = new URLSearchParams();
     if (tag && tag.trim()) params.set("tag", tag.trim());
+    // сбрасываем пагинацию при смене тега
     params.set("page", "1");
     const qs = params.toString();
     return qs ? `/notes?${qs}` : "/notes";
   };
 
   return (
-    <nav className={styles.sidebar}>
+    <nav className={styles.sidebar} aria-label="Filter notes by tag">
       <ul className={styles.list}>
         <MenuItem
           href={makeHref()}
@@ -58,7 +59,7 @@ interface MenuItemProps {
 function MenuItem({ href, label, active }: MenuItemProps) {
   return (
     <li className={`${styles.item} ${active ? styles.active : ""}`}>
-      <Link href={href} prefetch={false} className={styles.link}>
+      <Link href={href} prefetch={false} className={styles.link} aria-current={active ? "page" : undefined}>
         {label}
       </Link>
     </li>
