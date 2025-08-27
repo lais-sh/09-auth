@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_API_URL &&
-  process.env.NEXT_PUBLIC_API_URL.startsWith("http")
+  (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.startsWith("http")
     ? process.env.NEXT_PUBLIC_API_URL
     : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+    : "http://localhost:3000") as string;
 
 export const metadata: Metadata = {
   title: "Page Not Found - NoteHub",
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Page Not Found - NoteHub",
     description: "Oops! The page you are looking for does not exist.",
-    url: "/not-found",
+    url: "/not-found", // относительный URL корректен при наличии metadataBase
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
     siteName: "NoteHub",
     type: "website",
