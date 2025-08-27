@@ -13,9 +13,9 @@ const siteUrl =
   "https://your-vercel-domain.vercel.app";
 
 export async function generateMetadata(
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ): Promise<Metadata> {
-  const id = params?.id;
+  const { id } = await params;
 
   const fallbackTitle = "Note not found - NoteHub";
   const fallbackDescription = "The requested note does not exist.";
@@ -72,16 +72,15 @@ export async function generateMetadata(
 }
 
 export default async function NoteDetailsPage(
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
-  const id = params?.id;
+  const { id } = await params;
   if (!id) notFound();
 
   let note: Note | null = null;
   try {
     note = await serverFetch<Note>(`/notes/${encodeURIComponent(id)}`);
-  } catch {
-  }
+  } catch {}
 
   if (!note) notFound();
 
