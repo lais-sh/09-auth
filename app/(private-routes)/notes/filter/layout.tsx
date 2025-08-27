@@ -1,20 +1,15 @@
 import type { ReactNode } from "react";
-import css from "./FilterLayout.module.css";
 
-type FilterLayoutProps = {
+type LayoutProps = {
   children: ReactNode;
-  sidebar?: ReactNode;
+  sidebar: ReactNode;
 };
 
-export default function FilterLayout({ children, sidebar }: FilterLayoutProps) {
+export default function FilterLayout({ children, sidebar }: LayoutProps) {
   return (
-    <div className={css.container}>
-      <aside className={css.sidebar} aria-label="Filters">
-        {sidebar ?? null}
-      </aside>
-      <section className={css.content} role="region">
-        {children}
-      </section>
+    <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 24 }}>
+      <aside>{sidebar}</aside>
+      <main>{children}</main>
     </div>
   );
 }
