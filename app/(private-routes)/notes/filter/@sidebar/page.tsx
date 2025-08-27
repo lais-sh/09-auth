@@ -1,8 +1,4 @@
-import dynamic from "next/dynamic";
-const TagsMenu = dynamic(() => import("@/components/TagsMenu/TagsMenu"), {
-  ssr: false,
-  loading: () => <div style={{ padding: 12 }}>Loading…</div>,
-});
+import TagsMenu from "@/components/TagsMenu/TagsMenu";
 
 export default function Sidebar() {
   return (
