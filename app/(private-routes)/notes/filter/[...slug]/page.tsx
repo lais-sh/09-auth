@@ -1,91 +1,70 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-
-import NotesClient from "./Notes.client";
 import { serverFetch } from "@/lib/api/serverApi";
-import type { Note, NoteTag } from "@/types/note";
+import type { Note } from "@/types/note";
+
+type Params = { slug: string[] };
+type SParams = Record<string, string | string[] | undefined>;
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_TAGS = ["All", "Work", "Personal", "Meeting", "Shopping", "Todo"] as const;
-type AllowedTag = (typeof ALLOWED_TAGS)[number];
+export async function generateMetadata(
+  { params, searchParams }: { params: Promise<Params>; searchParams: Promise<SParams> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const sp = await searchParams;
 
-type Params = { slug?: string[] };
-type SParams = { page?: string | string[]; search?: string | string[]; q?: string | string[] };
-
-const SITE_ORIGIN = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const rawTag = decodeURIComponent(params.slug?.[0] ?? "All");
-  const tag = (ALLOWED_TAGS.includes(rawTag as AllowedTag) ? (rawTag as AllowedTag) : "All") as AllowedTag;
-
-  const title = tag === "All" ? "All notes - NoteHub" : `Notes tagged: ${tag} - NoteHub`;
-  const description =
-    tag === "All" ? "Browse all your personal notes in NoteHub." : `Browse notes tagged with ${tag} in NoteHub.`;
-
+  const titlePart =
+    Array.isArray(slug) && slug.length ? slug.join(" / ") : "All";
   return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url: `${SITE_ORIGIN}/notes/filter/${encodeURIComponent(rawTag)}`,
-      images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
-      siteName: "NoteHub",
-      type: "website",
-    },
+    title: `Notes - ${titlePart}`,
+    description: "Filtered notes list",
   };
 }
 
-export default async function Page({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams: SParams;
-}) {
-  const rawTag = decodeURIComponent(params.slug?.[0] ?? "All");
-  const tag = rawTag as NoteTag | "All";
+export default async function NotesFilterPage(
+  { params, searchParams }: { params: Promise<Params>; searchParams: Promise<SParams> }
+) {
+  const { slug } = await params;
+  const sp = await searchParams;
 
-  if (!ALLOWED_TAGS.includes(tag as AllowedTag)) {
-    notFound();
-  }
+  const getOne = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
 
-  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
-  const searchParam =
-    (Array.isArray(searchParams.search) ? searchParams.search[0] : searchParams.search) ??
-    (Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q) ??
-    "";
+  const search = getOne(sp.search);
+  const tag = getOne(sp.tag);
+  const page = Number(getOne(sp.page) ?? "1") || 1;
 
-  const pageNum = Math.max(1, Number(pageParam ?? 1) || 1);
-  const q = typeof searchParam === "string" ? searchParam.trim() : "";
-
-  const qs = new URLSearchParams();
-  qs.set("page", String(pageNum));
-  if (q) qs.set("search", q);
-  if (tag !== "All") qs.set("tag", tag as NoteTag);
-
-  type MaybePaginated =
-    | { notes: Note[]; totalPages?: number; page?: number }
-    | Note[];
-
-  let normalized: { notes: Note[]; totalPages: number; page: number };
-
-  try {
-    const data = await serverFetch<MaybePaginated>(`/notes?${qs.toString()}`);
-
-    if (Array.isArray(data)) {
-      normalized = { notes: data, totalPages: 1, page: pageNum };
-    } else {
-      const notes = Array.isArray((data as any)?.notes) ? (data as any).notes : [];
-      const totalPages =
-        typeof (data as any)?.totalPages === "number" ? (data as any).totalPages : 1;
-      const page = typeof (data as any)?.page === "number" ? (data as any).page : pageNum;
-      normalized = { notes, totalPages, page };
+  if (Array.isArray(slug) && slug.length >= 2) {
+    const [key, value] = slug;
+    if (key === "tag") {
+      const _ = tag;
     }
-  } catch {
-    normalized = { notes: [], totalPages: 1, page: pageNum };
   }
 
-  return <NotesClient initialData={normalized} tag={rawTag} />;
+  const paramsObj: Record<string, string | number | undefined> = {
+    search: search || undefined,
+    tag: tag || undefined,
+    page,
+  };
+  const query = Object.entries(paramsObj)
+    .filter(([, v]) => v !== undefined && v !== "")
+    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+    .join("&");
+
+  const notes = await serverFetch<Note[]>(
+    `/notes${query ? `?${query}` : ""}`
+  );
+
+  return (
+    <main style={{ maxWidth: 960, margin: "2rem auto" }}>
+      <h1>Filtered notes</h1>
+      <ul>
+        {notes.map((n) => (
+          <li key={n.id}>
+            <strong>{n.title}</strong> — {n.tag}
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
 }
