@@ -1,11 +1,8 @@
 import { serverFetch } from "@/lib/api/serverApi";
 import type { Note } from "@/types/note";
+import NoteList from "@/components/NoteList/NoteList"; // ← твій компонент
 
-type NotesSearchParams = {
-  search?: string;
-  page?: string;
-  tag?: string;
-};
+type NotesSearchParams = { search?: string; page?: string; tag?: string };
 
 export default async function NotesPage({
   searchParams,
@@ -13,7 +10,6 @@ export default async function NotesPage({
   searchParams?: Promise<NotesSearchParams>;
 }) {
   const sp = (await searchParams) ?? {};
-
   const search = sp.search ?? "";
   const tag = sp.tag ?? "";
   const page = Number.parseInt(sp.page ?? "1", 10) || 1;
@@ -28,7 +24,7 @@ export default async function NotesPage({
 
   return (
     <main style={{ padding: 16 }}>
-      <p>Found {Array.isArray(notes) ? notes.length : 0} notes</p>
+      <NoteList notes={notes} />
     </main>
   );
 }

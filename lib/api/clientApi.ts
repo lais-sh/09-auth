@@ -72,23 +72,28 @@ function pagesFromHeaders(
 }
 
 function normalizeListResponse(
-  raw: any,
+  raw: unknown,
   headers: Record<string, string | string[] | undefined> | undefined,
   page: number
 ): NotesResponse {
+  const asAny = raw as any;
   const notes: Note[] =
-    raw?.notes ?? raw?.results ?? raw?.items ?? raw?.data ?? (Array.isArray(raw) ? raw : []);
+    asAny?.notes ??
+    asAny?.results ??
+    asAny?.items ??
+    asAny?.data ??
+    (Array.isArray(raw) ? (raw as Note[]) : []);
 
   const perPage =
-    toNumber(raw?.perPage) ??
-    toNumber(raw?.limit) ??
+    toNumber(asAny?.perPage) ??
+    toNumber(asAny?.limit) ??
     toNumber(getFromHeaders(headers, "x-per-page")) ??
     PER_PAGE;
 
   let totalPages =
-    toNumber(raw?.totalPages) ??
-    (raw?.total
-      ? Math.max(1, Math.ceil(Number(raw.total) / (perPage || PER_PAGE)))
+    toNumber(asAny?.totalPages) ??
+    (asAny?.total
+      ? Math.max(1, Math.ceil(Number(asAny.total) / (perPage || PER_PAGE)))
       : undefined) ??
     (headers ? pagesFromHeaders(headers, perPage || PER_PAGE) : undefined);
 
@@ -97,18 +102,25 @@ function normalizeListResponse(
   return { notes, totalPages, page };
 }
 
-export async function register(payload: {
-  email: string;
-  password: string;
-}): Promise<User> {
+function formatAxiosError(err: unknown, fallbackMsg: string) {
+  if (axios.isAxiosError(err)) {
+    const status = err.response?.status ?? "unknown";
+    const body = err.response?.data ?? err.message;
+    const msg =
+      typeof body === "string"
+        ? body
+        : (body && ((body as any).message || (body as any).error)) || fallbackMsg;
+    return new Error(`${fallbackMsg} (${status}). ${msg}`);
+  }
+  return err instanceof Error ? err : new Error(fallbackMsg);
+}
+
+export async function register(payload: { email: string; password: string }): Promise<User> {
   const { data } = await api.post<User>("/auth/register", payload);
   return data;
 }
 
-export async function login(payload: {
-  email: string;
-  password: string;
-}): Promise<User> {
+export async function login(payload: { email: string; password: string }): Promise<User> {
   const { data } = await api.post<User>("/auth/login", payload);
   return data;
 }
@@ -133,36 +145,25 @@ export async function updateMe(payload: Partial<User>): Promise<User> {
 }
 
 export async function getNotes(params: FetchNotesParams): Promise<NotesResponse> {
-  const query: Record<string, string | number> = {
-    page: params.page,
-    perPage: params.perPage ?? PER_PAGE,
-  };
+  const page = Math.max(1, Number(params.page || 1));
+  const perPage = params.perPage ?? PER_PAGE;
+
+  const query: Record<string, string | number> = { page, perPage };
 
   const s = params.search?.trim();
   if (s) query.search = s;
-  if (params.tag && params.tag !== "All") query.tag = String(params.tag);
+
+  if (params.tag && String(params.tag).trim() && params.tag !== "All") {
+    query.tag = String(params.tag);
+  }
 
   try {
-    const res = await api.get("/notes", { params: query });
+    const res = await api.get<unknown>("/notes", { params: query });
     const headers = normalizeAxiosHeaders(res.headers as any);
-    return normalizeListResponse(res.data, headers, params.page);
+    return normalizeListResponse(res.data, headers, page);
   } catch (err) {
-    if (axios.isAxiosError(err)) {
-      const status = err.response?.status ?? "unknown";
-      const body = err.response?.data ?? err.message;
-      console.error("Failed to load notes (client)", {
-        url: "/notes",
-        params: query,
-        status,
-        body,
-      });
-      const msg =
-        typeof body === "string"
-          ? body
-          : (body && (body.message || body.error)) || "Request failed";
-      throw new Error(`List fetch failed (${status}). ${msg}`);
-    }
-    throw err;
+    console.error("Failed to load notes (client)", { url: "/notes", params: query, err });
+    throw formatAxiosError(err, "List fetch failed");
   }
 }
 
@@ -176,10 +177,7 @@ export async function createNote(payload: NewNote): Promise<Note> {
   return (data as any)?.note ?? (data as Note);
 }
 
-export async function updateNote(
-  noteId: string,
-  payload: Partial<NewNote>
-): Promise<Note> {
+export async function updateNote(noteId: string, payload: Partial<NewNote>): Promise<Note> {
   const { data } = await api.patch<Note | { note: Note }>(`/notes/${noteId}`, payload);
   return (data as any)?.note ?? (data as Note);
 }

@@ -6,12 +6,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteNote } from '@/lib/api/clientApi';
 import type { Note } from '@/types/note';
 import css from './NoteList.module.css';
+import { useRouter } from 'next/navigation'; // ← додай
 
 interface NoteListProps {
   notes: Note[];
 }
 
 export default function NoteList({ notes }: NoteListProps) {
+  const router = useRouter(); // ← додай
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -19,7 +21,7 @@ export default function NoteList({ notes }: NoteListProps) {
     mutationKey: ['note', 'delete'],
     mutationFn: (noteId: string) => deleteNote(noteId),
 
-      onMutate: async (noteId: string) => {
+    onMutate: async (noteId: string) => {
       setDeletingId(noteId);
 
       await queryClient.cancelQueries({ queryKey: ['notes'], exact: false });
@@ -42,8 +44,11 @@ export default function NoteList({ notes }: NoteListProps) {
     },
 
     onSuccess: (_data, noteId) => {
+      // ці інвалідації не зашкодять...
       queryClient.invalidateQueries({ queryKey: ['notes'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+      // ...але саме це гарантує актуальний SSR-список
+      router.refresh(); // ← додай
     },
 
     onSettled: () => {
