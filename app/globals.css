@@ -1,6 +1,8 @@
+/* === GLOBAL TOKENS & RESETS ============================================ */
 :root {
   color-scheme: light dark;
 
+  /* — твои "color-" токены (оставлены как совместимые алиасы) — */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-elevated: #f1f5f9;
@@ -13,27 +15,45 @@
   --color-success: #16a34a;
   --color-warning: #f59e0b;
 
-  --bg: #f8fafc;
-  --surface: #ffffff;
+  /* — базовые — */
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
   --surface-2: #f7f9fc;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --fg: #0f172a;
 
+  --text: var(--color-text);
+  --fg: var(--color-text);
+  --muted: var(--color-muted);
+  --border: var(--color-border);
+
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+
+  /* — акценты/состояния — */
+  --error: var(--color-danger);
+  --danger: var(--color-danger);
+
+  /* — кольца/обводки — */
+  /* Используй: box-shadow: var(--focus-ring) или 0 0 0 6px var(--ring-color) */
+  --ring-color: rgba(37, 99, 235, 0.35);
+  --ring-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+  /* — геометрия/тень/шрифт — */
   --radius-sm: 8px;
   --radius-lg: 12px;
+  --radius: 16px;
+
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 2px 8px rgba(15, 23, 42, 0.1);
+  --shadow-md: 0 2px 8px rgba(15, 23, 42, 0.10);
   --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --shadow: var(--shadow-lg);
+
   --transition: 0.2s ease;
   --font-sans: var(--font-roboto, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol");
   --leading: 1.55;
   --container: 1120px;
 
+  /* — отступы — */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -43,6 +63,7 @@
   --space-8: 32px;
   --space-10: 40px;
 
+  /* — лоадер — */
   --loader-size: 56px;
   --loader-color: #4b6cb7;
   --loader-track: rgba(75, 108, 183, 0.18);
@@ -50,10 +71,25 @@
   --loader-ease: cubic-bezier(0.65, 0.05, 0.36, 1);
   --loader-text: #6b7280;
 
+  /* — сайдбар/линки — */
+  --item-bg: #ffffff;
+  --hover: #f9fafb;
+
+  /* — модалки/оверлеи — */
   --modal-radius: 16px;
   --modal-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --modal-bg: #ffffff;
+  --modal-fg: #0e1116;
+  --overlay-bg: rgba(14, 17, 22, 0.6);
+  --overlay: rgba(17, 24, 39, 0.55);
+  --focus-outline: 2px solid #3b82f6;
+
+  /* — теги (детали заметки) — */
+  --tag-bg: #e6f5f2;
+  --tag-fg: #0b9a8f;
 }
 
+/* Явная тёмная тема через data-атрибут */
 [data-theme="dark"] {
   --color-bg: #0b1220;
   --color-surface: #0f172a;
@@ -64,25 +100,43 @@
   --color-muted: #94a3b8;
   --color-border: #1f2937;
 
-  --bg: #0b1220;
-  --surface: #0f172a;
-  --surface-2: #0f172a;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --fg: #e5e7eb;
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface);
+  --text: var(--color-text);
+  --fg: var(--color-text);
+  --muted: var(--color-muted);
+  --border: var(--color-border);
 
-  --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.45);
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --shadow: var(--shadow-lg);
+
+  --ring-color: rgba(59, 130, 246, 0.45);
+  --ring-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
+  --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.45);
+
   --loader-color: #7aa2ff;
   --loader-track: rgba(255, 255, 255, 0.12);
   --loader-text: #9ca3af;
+
+  --item-bg: #0d1426;
+  --hover: #111827;
+
+  --modal-bg: #0f1115;
+  --modal-fg: #e6eaef;
+  --overlay-bg: rgba(8, 9, 12, 0.65);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --tag-bg: rgba(16, 185, 129, 0.15);
+  --tag-fg: #34d399;
 }
 
+/* Авто-тёмная, если не принудительно data-theme="light" */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-bg: #0b1220;
@@ -94,26 +148,44 @@
     --color-muted: #94a3b8;
     --color-border: #1f2937;
 
-    --bg: #0b1220;
-    --surface: #0f172a;
-    --surface-2: #0f172a;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: #1f2937;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --fg: #e5e7eb;
+    --bg: var(--color-bg);
+    --surface: var(--color-surface);
+    --surface-2: var(--color-surface);
+    --text: var(--color-text);
+    --fg: var(--color-text);
+    --muted: var(--color-muted);
+    --border: var(--color-border);
 
-    --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.45);
+    --primary: var(--color-primary);
+    --primary-hover: var(--color-primary-hover);
+
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
+    --shadow: var(--shadow-lg);
+
+    --ring-color: rgba(59, 130, 246, 0.45);
+    --ring-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
+    --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.45);
+
     --loader-color: #7aa2ff;
     --loader-track: rgba(255, 255, 255, 0.12);
     --loader-text: #9ca3af;
+
+    --item-bg: #0d1426;
+    --hover: #111827;
+
+    --modal-bg: #0f1115;
+    --modal-fg: #e6eaef;
+    --overlay-bg: rgba(8, 9, 12, 0.65);
+    --overlay: rgba(0, 0, 0, 0.6);
+
+    --tag-bg: rgba(16, 185, 129, 0.15);
+    --tag-fg: #34d399;
   }
 }
 
+/* === RESETS / BASE ===================================================== */
 *,
 *::before,
 *::after { box-sizing: border-box; }
@@ -145,7 +217,6 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.25;
   letter-spacing: -0.01em;
 }
-
 h1 { font-size: clamp(28px, 4vw, 40px); }
 h2 { font-size: clamp(24px, 3.2vw, 32px); }
 h3 { font-size: clamp(20px, 2.8vw, 26px); }
@@ -191,7 +262,6 @@ button {
 }
 .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
-
 .btn-primary { border-color: transparent; background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }

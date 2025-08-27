@@ -1,28 +1,4 @@
-:global(:root) {
-  --overlay: rgba(17, 24, 39, 0.55);
-  --bg: #ffffff;
-  --fg: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --ring: #2563eb;
-  --tag-bg: #e6f5f2;
-  --tag-fg: #0b9a8f;
-  --shadow: 0 20px 45px rgba(0, 0, 0, 0.18), 0 8px 20px rgba(0, 0, 0, 0.12);
-}
-
-@media (prefers-color-scheme: dark) {
-:global(:root) {
-    --overlay: rgba(0, 0, 0, 0.6);
-    --bg: #0b1020;
-    --fg: #e5e7eb;
-    --muted: #9ca3af;
-    --border: #1f2436;
-    --ring: #60a5fa;
-    --tag-bg: rgba(16, 185, 129, 0.15);
-    --tag-fg: #34d399;
-    --shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.35);
-  }
-}
+/* components/NotePreview/NotePreview.module.css */
 
 .wrapper {
   position: fixed;
@@ -104,8 +80,8 @@
 
 .closeButton:focus-visible {
   outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 25%, transparent);
+  border-color: var(--ring-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring-color) 25%, transparent);
 }
 
 .meta {
@@ -148,8 +124,10 @@
 
 @media (max-width: 560px) {
   .wrapper {
-    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-      max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    padding: max(8px, env(safe-area-inset-top))
+             max(8px, env(safe-area-inset-right))
+             max(8px, env(safe-area-inset-bottom))
+             max(8px, env(safe-area-inset-left));
   }
 
   .note {
@@ -190,7 +168,7 @@
 
 @keyframes overlayFade {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes cardPop {
