@@ -1,3 +1,7 @@
-export default function ModalSlotDefault() {
-  return null;
+export default function ModalSlot({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
 }
