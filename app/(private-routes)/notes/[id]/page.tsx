@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { serverFetch } from "@/lib/api/serverApi";
 import type { Note } from "@/types/note";
+import Modal from "@/components/Modal/Modal";
 
 export const dynamic = "force-dynamic";
 
@@ -71,49 +72,49 @@ export async function generateMetadata(
   }
 }
 
-export default async function NoteDetailsPage(
+export default async function NoteModalPage(
   { params }: { params: Promise<Params> }
 ) {
   const { id } = await params;
   if (!id) notFound();
 
-  let note: Note | null = null;
-  try {
-    note = await serverFetch<Note>(`/notes/${encodeURIComponent(id)}`);
-  } catch {}
-
+  const note = await serverFetch<Note>(`/notes/${encodeURIComponent(id)}`).catch(() => null);
   if (!note) notFound();
 
+  const titleId = `note-${id}-title`;
+
   return (
-    <article style={{ maxWidth: 720, margin: "2rem auto", lineHeight: 1.6 }}>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <h1 style={{ margin: 0 }}>{note.title}</h1>
-        <span
+    <Modal labelledBy={titleId}>
+      <article style={{ maxWidth: 720, margin: "2rem auto", lineHeight: 1.6 }}>
+        <header
           style={{
-            padding: "4px 8px",
-            borderRadius: 8,
-            background: "#eef",
-            fontSize: 12,
-            whiteSpace: "nowrap",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
           }}
         >
-          {note.tag}
-        </span>
-      </header>
+          <h1 id={titleId} style={{ margin: 0 }}>{note.title}</h1>
+          <span
+            style={{
+              padding: "4px 8px",
+              borderRadius: 8,
+              background: "#eef",
+              fontSize: 12,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {note.tag}
+          </span>
+        </header>
 
-      <p style={{ marginTop: 12, whiteSpace: "pre-wrap" }}>{note.content}</p>
+        <p style={{ marginTop: 12, whiteSpace: "pre-wrap" }}>{note.content}</p>
 
-      <footer style={{ marginTop: 24, fontSize: 12, color: "#666" }}>
-        Created: {note.createdAt}
-        {note.updatedAt ? ` • Updated: ${note.updatedAt}` : null}
-      </footer>
-    </article>
+        <footer style={{ marginTop: 24, fontSize: 12, color: "#666" }}>
+          Created: {note.createdAt}
+          {note.updatedAt ? ` • Updated: ${note.updatedAt}` : null}
+        </footer>
+      </article>
+    </Modal>
   );
 }
