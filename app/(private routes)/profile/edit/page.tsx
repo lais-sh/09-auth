@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import css from './page.module.css';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { clientGetMe, clientUpdateMe } from '@/lib/api/clientApi';
-import { useRouter } from 'next/navigation';
+import css from "./page.module.css";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { clientGetMe, clientUpdateMe } from "@/lib/api/clientApi";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState<string>('');
-  const [avatar, setAvatar] = useState<string | null>(null);
+  const updateUser = useAuthStore((s) => s.updateUser);
+  const setUser = useAuthStore((s) => s.setUser);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [avatar, setAvatar] = useState<string>("/avatar-placeholder.png");
   const [pending, setPending] = useState(true);
 
   useEffect(() => {
@@ -18,15 +21,17 @@ export default function ProfileEditPage() {
       const me = await clientGetMe();
       setUsername(me.username);
       setEmail(me.email);
-      setAvatar(me.avatar ?? null);
+      setAvatar(me.avatar || "/avatar-placeholder.png");
+      try { setUser(me); } catch {}
       setPending(false);
     })();
-  }, []);
+  }, [setUser]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await clientUpdateMe({ username });
-    router.replace('/profile');
+    const updated = await clientUpdateMe({ username });
+    updateUser({ username: updated.username, avatar: updated.avatar, email: updated.email });
+    router.replace("/profile");
   }
 
   function onCancel() {
@@ -41,7 +46,7 @@ export default function ProfileEditPage() {
         <h1 className={css.formTitle}>Edit Profile</h1>
 
         <Image
-          src={avatar || '/avatar-placeholder.png'}
+          src={avatar}
           alt="User Avatar"
           width={120}
           height={120}

@@ -32,3 +32,9 @@ export interface NotesResponse {
 }
 
 export type NoteDetailsResponse = Note;
+
+export interface User {
+  email: string;
+  username: string;
+  avatar: string;
+}

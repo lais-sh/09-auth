@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { Suspense } from "react";
-
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
@@ -53,18 +53,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+type RootLayoutProps = {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+};
+
+export default function RootLayout({ children, modal }: RootLayoutProps) {
   return (
     <html lang="uk">
       <body className={roboto.variable}>
-        <TanStackProvider>
-          <Suspense fallback={null}>
-            <Header />
-          </Suspense>
-
-          <main>{children}</main>
-          <Footer />
-        </TanStackProvider>
+        <AuthProvider>
+          <TanStackProvider>
+            <Suspense fallback={null}>
+              <Header />
+            </Suspense>
+            <main>{children}</main>
+            {modal}
+            <Footer />
+          </TanStackProvider>
+        </AuthProvider>
       </body>
     </html>
   );

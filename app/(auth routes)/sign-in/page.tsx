@@ -1,100 +1,80 @@
-'use client';
+"use client";
 
-import { useState, type FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { clientLogin } from '@/lib/api/clientApi';
-import { useAuthStore } from '@/lib/store/authStore';
-import css from './page.module.css';
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
+import css from "./page.module.css";
+import { login } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
+
+const DEFAULT_AFTER_LOGIN: Route = "/profile";
+
+/** Преобразуем ?from= к безопасному Route для typedRoutes */
+function resolveRedirect(sp: ReturnType<typeof useSearchParams>): Route {
+  const raw = sp.get("from");
+  if (!raw) return DEFAULT_AFTER_LOGIN;
+
+  try {
+    // Парсим и относительные, и абсолютные значения
+    const url = new URL(raw, "http://localhost");
+    const p = url.pathname;
+
+    // Разрешаем ТОЛЬКО известные приватные пути
+    if (p === "/profile" || p === "/notes" || p.startsWith("/notes/")) {
+      return p as Route; // сужаем вручную — валидно для typedRoutes
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_AFTER_LOGIN;
+}
 
 export default function SignInPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const from = params.get('from') ?? '/profile';
-
+  const sp = useSearchParams();
   const { setUser } = useAuthStore();
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: clientLogin,
-    onSuccess: (user) => {
-      setUser(user);
-      router.refresh();
-      router.replace(from);
-    },
-  });
-
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLocalError(null);
+    setError(null);
 
-    const form = new FormData(e.currentTarget);
-    const email = String(form.get('email') ?? '').trim();
-    const password = String(form.get('password') ?? '');
-
-    if (!email || !password) {
-      setLocalError('Please enter email and password');
-      return;
-    }
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     try {
-      await mutateAsync({ email, password });
+      const user = await login({ email, password });
+      setUser(user);
+      router.refresh();
+
+      const to: Route = resolveRedirect(sp); // ← типобезопасный Route
+      router.replace(to);                    // ← больше НЕ string
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Login failed';
-      setLocalError(message);
+      setError(err?.response?.data?.message || "Login failed");
     }
   }
 
   return (
     <main className={css.mainContent}>
-      <form className={css.form} onSubmit={onSubmit} noValidate>
+      <form className={css.form} onSubmit={onSubmit}>
         <h1 className={css.formTitle}>Sign in</h1>
 
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            className={css.input}
-            required
-            disabled={isPending}
-            autoComplete="email"
-          />
+          <input id="email" type="email" name="email" className={css.input} required />
         </div>
 
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            className={css.input}
-            required
-            disabled={isPending}
-            autoComplete="current-password"
-          />
+          <input id="password" type="password" name="password" className={css.input} required />
         </div>
 
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={isPending}
-            aria-busy={isPending}
-          >
-            {isPending ? '...' : 'Log in'}
-          </button>
+          <button type="submit" className={css.submitButton}>Log in</button>
         </div>
 
-        {localError && (
-          <p className={css.error} role="alert" aria-live="assertive">
-            {localError}
-          </p>
-        )}
+        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );

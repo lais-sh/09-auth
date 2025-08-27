@@ -1,50 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/sign-in", "/sign-up"]; 
-const PRIVATE_PREFIXES = ["/profile", "/notes"]; 
+const PUBLIC_ROUTES = ["/", "/sign-in", "/sign-up"];
+const PRIVATE_PREFIXES = ["/profile", "/notes"];
 
-function isPublic(pathname: string) {
-  return PUBLIC_ROUTES.includes(pathname);
-}
-
-function isPrivate(pathname: string) {
-  return PRIVATE_PREFIXES.some((p) => pathname.startsWith(p));
-}
+const isPublic = (p: string) => PUBLIC_ROUTES.includes(p);
+const isPrivate = (p: string) => PRIVATE_PREFIXES.some((x) => p.startsWith(x));
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, origin, search } = req.nextUrl;
 
-  let authed = false;
-  try {
-    const res = await fetch(new URL("/api/auth/session", req.url), {
-      headers: { cookie: req.headers.get("cookie") || "" },
-    });
-        const text = await res.text();
-    authed = !!text && text !== "undefined" && text !== "null";
-  } catch {
-    authed = false;
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+
+  const redirectToLogin = () =>
+    NextResponse.redirect(new URL(`/sign-in?from=${encodeURIComponent(pathname + search)}`, origin));
+  const redirectToProfile = () => NextResponse.redirect(new URL("/profile", origin));
+
+  if (isPrivate(pathname) && !accessToken) {
+    if (refreshToken) {
+      const res = await fetch(`${origin}/api/auth/refresh`, {
+        method: "GET",
+        headers: { cookie: req.headers.get("cookie") ?? "" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const next = NextResponse.next();
+        const setCookie = res.headers.get("set-cookie");
+        if (setCookie) next.headers.append("set-cookie", setCookie);
+        return next;
+      }
+    }
+    return redirectToLogin();
   }
 
-  if (isPrivate(pathname) && !authed) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/sign-in";
-    url.searchParams.set("from", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (!isPrivate(pathname) && !isPublic(pathname) && !authed) {
-       return NextResponse.next();
-  }
-
-  if (isPublic(pathname) && authed && (pathname === "/sign-in" || pathname === "/sign-up")) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/profile";
-    return NextResponse.redirect(url);
-  }
+  if (isPublic(pathname) && accessToken) return redirectToProfile();
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|assets|images).*)"],
+  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
 };
