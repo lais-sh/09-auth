@@ -1,22 +1,21 @@
 'use client';
 
-import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
-import styles from "./TagsMenu.module.css";
+import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import styles from './TagsMenu.module.css';
 
-const TAGS = ["Work", "Personal", "Meeting", "Shopping", "Todo"] as const;
+const TAGS = ['Work', 'Personal', 'Meeting', 'Shopping', 'Todo'] as const;
 type Tag = (typeof TAGS)[number];
 
 export default function TagsMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const itemsRef = useRef<HTMLAnchorElement[]>([]);
+  const itemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const currentTag = searchParams.get("tag") || "";
+  const currentTag = searchParams.get('tag') || '';
 
   useEffect(() => {
     const onDocClick = (event: MouseEvent) => {
@@ -24,56 +23,60 @@ export default function TagsMenu() {
         setOpen(false);
       }
     };
-    if (open) document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
+    if (open) document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
   }, [open]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setOpen(false);
         buttonRef.current?.focus();
       }
-      if (open && (e.key === "ArrowDown" || e.key === "Down")) {
+      if (open && (e.key === 'ArrowDown' || e.key === 'Down')) {
         e.preventDefault();
         itemsRef.current[0]?.focus();
       }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
   const toggle = () => setOpen((v) => !v);
 
   const buildHref = (tag?: Tag) => {
     const params = new URLSearchParams(Array.from(searchParams.entries()));
-    params.delete("page");
-    if (tag) {
-      params.set("tag", tag);
-    } else {
-      params.delete("tag");
-    }
-    const qs = params.toString();
-    const notesPath = "/notes";
-    return qs ? `${notesPath}?${qs}` : notesPath;
+    params.delete('page');
+    if (tag) params.set('tag', tag);
+    else params.delete('tag');
+
+    const queryObj: Record<string, string> = {};
+    params.forEach((value, key) => {
+      if (value !== '') queryObj[key] = value;
+    });
+
+    return {
+      pathname: '/notes' as const,
+      query: Object.keys(queryObj).length ? queryObj : undefined,
+    };
   };
 
   const onMenuKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
-    const focusables = itemsRef.current.filter(Boolean);
+    const focusables = itemsRef.current.filter(Boolean) as HTMLAnchorElement[];
     const idx = focusables.findIndex((el) => el === document.activeElement);
 
-    if (e.key === "ArrowDown" || e.key === "Down") {
+    if (e.key === 'ArrowDown' || e.key === 'Down') {
       e.preventDefault();
       const next = focusables[(idx + 1) % focusables.length];
       next?.focus();
-    } else if (e.key === "ArrowUp" || e.key === "Up") {
+    } else if (e.key === 'ArrowUp' || e.key === 'Up') {
       e.preventDefault();
       const prev = focusables[(idx - 1 + focusables.length) % focusables.length];
       prev?.focus();
-    } else if (e.key === "Home") {
+    } else if (e.key === 'Home') {
       e.preventDefault();
       focusables[0]?.focus();
-    } else if (e.key === "End") {
+    } else if (e.key === 'End') {
       e.preventDefault();
       focusables[focusables.length - 1]?.focus();
     }
@@ -105,11 +108,11 @@ export default function TagsMenu() {
             <Link
               href={buildHref(undefined)}
               prefetch={false}
-              className={`${styles.menuLink} ${!currentTag ? styles.active : ""}`}
+              className={`${styles.menuLink} ${!currentTag ? styles.active : ''}`}
               onClick={() => setOpen(false)}
               role="menuitem"
               ref={(el) => {
-                if (el) itemsRef.current[0] = el;
+                itemsRef.current[0] = el;
               }}
             >
               All notes
@@ -124,11 +127,11 @@ export default function TagsMenu() {
                 <Link
                   href={buildHref(tag)}
                   prefetch={false}
-                  className={`${styles.menuLink} ${isActive ? styles.active : ""}`}
+                  className={`${styles.menuLink} ${isActive ? styles.active : ''}`}
                   onClick={() => setOpen(false)}
                   role="menuitem"
                   ref={(el) => {
-                    if (el) itemsRef.current[index] = el;
+                    itemsRef.current[index] = el;
                   }}
                 >
                   {tag}
