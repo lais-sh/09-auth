@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -17,7 +17,7 @@ export default function SidebarDefault() {
   const basePath = "/notes";
 
   const makeHref = (tag: Tag) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.delete("page");
 
     if (tag === "All") {
@@ -52,4 +52,3 @@ export default function SidebarDefault() {
     </nav>
   );
 }
-

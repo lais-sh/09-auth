@@ -10,7 +10,7 @@ import css from './page.module.css';
 export default function SignInPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const from = params.get('from') || '/profile';
+  const from = params.get('from') ?? '/profile';
 
   const { setUser } = useAuthStore();
   const [localError, setLocalError] = useState<string | null>(null);
@@ -95,4 +95,3 @@ export default function SignInPage() {
     </main>
   );
 }
-
