@@ -5,39 +5,37 @@ const PRIVATE_PREFIXES = ["/profile", "/notes"];
 
 const isPublic = (p: string) => PUBLIC_ROUTES.includes(p);
 const isPrivate = (p: string) => PRIVATE_PREFIXES.some((x) => p.startsWith(x));
+const isAuthPage = (p: string) => p === "/sign-in" || p === "/sign-up";
 
 export async function middleware(req: NextRequest) {
-  const { pathname, origin, search } = req.nextUrl;
+  const url = req.nextUrl.clone();
+  const { pathname, search } = req.nextUrl;
 
-  const accessToken = req.cookies.get("accessToken")?.value;
-  const refreshToken = req.cookies.get("refreshToken")?.value;
+  const res = await fetch(new URL("/api/auth/session", req.url), {
+    headers: { cookie: req.headers.get("cookie") ?? "" },
+    cache: "no-store",
+  });
 
-  const redirectToLogin = () =>
-    NextResponse.redirect(new URL(`/sign-in?from=${encodeURIComponent(pathname + search)}`, origin));
-  const redirectToProfile = () => NextResponse.redirect(new URL("/profile", origin));
+  const text = await res.text();
+  const authed = !!text && text !== "null" && text !== "undefined";
 
-  if (isPrivate(pathname) && !accessToken) {
-    if (refreshToken) {
-      const res = await fetch(`${origin}/api/auth/refresh`, {
-        method: "GET",
-        headers: { cookie: req.headers.get("cookie") ?? "" },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const next = NextResponse.next();
-        const setCookie = res.headers.get("set-cookie");
-        if (setCookie) next.headers.append("set-cookie", setCookie);
-        return next;
-      }
-    }
-    return redirectToLogin();
+  if (isPrivate(pathname) && !authed) {
+    url.pathname = "/sign-in";
+    url.search = "";
+    url.searchParams.set("from", `${pathname}${search}`);
+    return NextResponse.redirect(url);
   }
 
-  if (isPublic(pathname) && accessToken) return redirectToProfile();
+  if (isAuthPage(pathname) && authed) {
+    url.pathname = "/profile";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
-};
+
+ export const config = {
+   matcher: ["/((?!_next/static|_next/image|favicon.ico|assets|images).*)"],
+  };

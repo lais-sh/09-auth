@@ -1,52 +1,51 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { api } from '../../api';
+import { parse } from 'cookie';
+import { isAxiosError } from 'axios';
+import { logErrorResponse } from '../../_utils/utils';
 
-const BACKEND_BASE = process.env.NOTEHUB_API_URL?.replace(/\/+$/, "") || "https://notehub-api.goit.study";
-
-function applySetCookies(from: Response, to: NextResponse) {
-  const anyHeaders = from.headers as any;
-
-  const setCookies: string[] =
-    typeof anyHeaders.getSetCookie === "function"
-      ? anyHeaders.getSetCookie()
-      : (from.headers.get("set-cookie") ? [from.headers.get("set-cookie") as string] : []);
-
-  for (const sc of setCookies) {
-    to.headers.append("set-cookie", sc);
-  }
-}
-
-export async function POST(req: Request) {
-  const cookieHeader = req.headers.get("cookie") ?? "";
-
+export async function GET(request: NextRequest) {
   try {
-    const refreshRes = await fetch(`${BACKEND_BASE}/auth/refresh`, {
-      method: "POST",
-      headers: { cookie: cookieHeader },
-      cache: "no-store",
-    });
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get('refreshToken')?.value;
+    const next = request.nextUrl.searchParams.get('next') || '/';
 
-    const text = await refreshRes.text();
-    const body = text ? JSON.parse(text) : null;
-
-    const nextRes = NextResponse.json(body, { status: refreshRes.status });
-    applySetCookies(refreshRes, nextRes);
-    return nextRes;
-  } catch {
-    try {
-      const sessionRes = await fetch(`${BACKEND_BASE}/auth/session`, {
-        method: "GET",
-        headers: { cookie: cookieHeader },
-        cache: "no-store",
+    if (refreshToken) {
+      const apiRes = await api.get('auth/session', {
+        headers: {
+          Cookie: cookieStore.toString(),
+        },
       });
+      const setCookie = apiRes.headers['set-cookie'];
+      if (setCookie) {
+        const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+        let accessToken = '';
+        let refreshToken = '';
 
-      const text = await sessionRes.text();
-      const body = text ? JSON.parse(text) : null;
+        for (const cookieStr of cookieArray) {
+          const parsed = parse(cookieStr);
+          if (parsed.accessToken) accessToken = parsed.accessToken;
+          if (parsed.refreshToken) refreshToken = parsed.refreshToken;
+        }
 
-      const nextRes = NextResponse.json(body, { status: sessionRes.status });
-      applySetCookies(sessionRes, nextRes);
-      return nextRes;
-    } catch {
-      return NextResponse.json({ message: "Refresh failed" }, { status: 401 });
+        if (accessToken) cookieStore.set('accessToken', accessToken);
+        if (refreshToken) cookieStore.set('refreshToken', refreshToken);
+
+        return NextResponse.redirect(new URL(next, request.url), {
+          headers: {
+            'set-cookie': cookieStore.toString(),
+          },
+        });
+      }
     }
+    return NextResponse.redirect(new URL('/sign-in', request.url));
+  } catch (error) {
+    if (isAxiosError(error)) {
+      logErrorResponse(error.response?.data);
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+    logErrorResponse({ message: (error as Error).message });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

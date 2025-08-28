@@ -3,9 +3,9 @@ export interface User {
   email: string;
   username: string;
 
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
 
-  avatar?: string | null;
+  avatar: string;
 
   createdAt?: string;
   updatedAt?: string;
