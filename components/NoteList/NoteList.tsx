@@ -1,70 +1,90 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { deleteNote } from '@/lib/api/clientApi';
 import type { Note } from '@/types/note';
-import css from './NoteList.module.css';
-import { useRouter } from 'next/navigation'; // ← додай
+import type { NotesResponse } from '@/lib/api/clientApi';
 
-interface NoteListProps {
-  notes: Note[];
-}
+import css from './NoteList.module.css';
+
+type NoteListProps = {
+  // очікуємо масив, але на всяк випадок підстрахуємося
+  notes: Note[] | any;
+};
 
 export default function NoteList({ notes }: NoteListProps) {
-  const router = useRouter(); // ← додай
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // гарантований масив для рендера
+  const list: Note[] = Array.isArray(notes)
+    ? notes
+    : notes?.notes ?? notes?.items ?? notes?.data ?? [];
 
   const { mutate } = useMutation({
     mutationKey: ['note', 'delete'],
     mutationFn: (noteId: string) => deleteNote(noteId),
 
+    // оптимістичне оновлення
     onMutate: async (noteId: string) => {
       setDeletingId(noteId);
 
+      // зупиняємо всі запити "notes"
       await queryClient.cancelQueries({ queryKey: ['notes'], exact: false });
 
-      const previous = queryClient.getQueriesData<Note[]>({ queryKey: ['notes'] });
+      // зберігаємо попередні значення усіх відповідних кешів
+      const previous = queryClient.getQueriesData<NotesResponse>({ queryKey: ['notes'] });
 
+      // у кожному кеші акуратно оновлюємо поле notes (не ламаючи форму NotesResponse)
       previous.forEach(([key, old]) => {
-        const next = (old ?? []).filter((n) => String(n.id) !== String(noteId));
-        queryClient.setQueryData<Note[]>(key, next);
+        const oldNotes = Array.isArray(old?.notes) ? old!.notes : [];
+        const nextNotes = oldNotes.filter((n) => String(n.id) !== String(noteId));
+
+        const next: NotesResponse = {
+          page: old?.page ?? 1,
+          totalPages: old?.totalPages ?? 1,
+          notes: nextNotes,
+        };
+
+        queryClient.setQueryData<NotesResponse>(key, next);
       });
 
       return { previous };
     },
 
-    onError: (err, _noteId, ctx) => {
+    // якщо помилка — відкат
+    onError: (_err, _noteId, ctx) => {
       ctx?.previous?.forEach(([key, data]) => {
-        queryClient.setQueryData<Note[]>(key, data);
+        queryClient.setQueryData<NotesResponse>(key, data);
       });
-      console.error('❌ Failed to delete note:', err);
+      console.error('❌ Failed to delete note');
     },
 
     onSuccess: (_data, noteId) => {
-      // ці інвалідації не зашкодять...
-      queryClient.invalidateQueries({ queryKey: ['notes'], exact: false });
+      // інвалідуємо деталі видаленої нотатки та списки
       queryClient.invalidateQueries({ queryKey: ['note', noteId] });
-      // ...але саме це гарантує актуальний SSR-список
-      router.refresh(); // ← додай
+      queryClient.invalidateQueries({ queryKey: ['notes'], exact: false });
+      // синхронізуємо SSR/маршрути
+      router.refresh();
     },
 
-    onSettled: () => {
-      setDeletingId(null);
-    },
+    onSettled: () => setDeletingId(null),
   });
 
-  if (!notes || notes.length === 0) {
+  if (!Array.isArray(list) || list.length === 0) {
     return <p className={css.empty}>No notes found.</p>;
   }
 
   return (
     <ul className={css.list}>
-      {notes.map(({ id, title, content, tag }) => {
+      {list.map(({ id, title, content, tag }) => {
         const idStr = String(id);
-        const isThisDeleting = deletingId === idStr;
+        const isDeleting = deletingId === idStr;
 
         return (
           <li key={idStr} className={css.listItem}>
@@ -83,12 +103,12 @@ export default function NoteList({ notes }: NoteListProps) {
               className={css.button}
               type="button"
               aria-label={`Delete note ${title}`}
-              aria-disabled={isThisDeleting}
+              aria-disabled={isDeleting}
               onClick={() => mutate(idStr)}
-              disabled={isThisDeleting}
+              disabled={isDeleting}
               data-note-id={idStr}
             >
-              {isThisDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? 'Deleting…' : 'Delete'}
             </button>
           </li>
         );

@@ -18,6 +18,7 @@ type FetchNotesParams = {
   tag?: NoteTag | "All" | string;
 };
 
+// ─── helpers ──────────────────────────────────────────────────────────────────
 function toNumber(v: unknown): number | undefined {
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
@@ -76,25 +77,20 @@ function normalizeListResponse(
   headers: Record<string, string | string[] | undefined> | undefined,
   page: number
 ): NotesResponse {
-  const asAny = raw as any;
-  const notes: Note[] =
-    asAny?.notes ??
-    asAny?.results ??
-    asAny?.items ??
-    asAny?.data ??
-    (Array.isArray(raw) ? (raw as Note[]) : []);
+  const any = raw as any;
+  const notesCandidate =
+    any?.notes ?? any?.results ?? any?.items ?? any?.data ?? (Array.isArray(raw) ? raw : []);
+  const notes: Note[] = Array.isArray(notesCandidate) ? (notesCandidate as Note[]) : [];
 
   const perPage =
-    toNumber(asAny?.perPage) ??
-    toNumber(asAny?.limit) ??
+    toNumber(any?.perPage) ??
+    toNumber(any?.limit) ??
     toNumber(getFromHeaders(headers, "x-per-page")) ??
     PER_PAGE;
 
   let totalPages =
-    toNumber(asAny?.totalPages) ??
-    (asAny?.total
-      ? Math.max(1, Math.ceil(Number(asAny.total) / (perPage || PER_PAGE)))
-      : undefined) ??
+    toNumber(any?.totalPages) ??
+    (any?.total ? Math.max(1, Math.ceil(Number(any.total) / (perPage || PER_PAGE))) : undefined) ??
     (headers ? pagesFromHeaders(headers, perPage || PER_PAGE) : undefined);
 
   if (!totalPages) totalPages = 1;
@@ -115,6 +111,7 @@ function formatAxiosError(err: unknown, fallbackMsg: string) {
   return err instanceof Error ? err : new Error(fallbackMsg);
 }
 
+// ─── auth/users ────────────────────────────────────────────────────────────────
 export async function register(payload: { email: string; password: string }): Promise<User> {
   const { data } = await api.post<User>("/auth/register", payload);
   return data;
@@ -144,6 +141,7 @@ export async function updateMe(payload: Partial<User>): Promise<User> {
   return data;
 }
 
+// ─── notes ────────────────────────────────────────────────────────────────────
 export async function getNotes(params: FetchNotesParams): Promise<NotesResponse> {
   const page = Math.max(1, Number(params.page || 1));
   const perPage = params.perPage ?? PER_PAGE;
@@ -186,6 +184,7 @@ export async function deleteNote(noteId: string): Promise<void> {
   await api.delete(`/notes/${noteId}`);
 }
 
+// алиасы для импорта на клиенте
 export {
   register as clientRegister,
   login as clientLogin,

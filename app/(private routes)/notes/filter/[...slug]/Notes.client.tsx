@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useDebounce } from 'use-debounce';
 import { useQuery } from '@tanstack/react-query';
@@ -27,19 +27,15 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
   const [debouncedSearch] = useDebounce(search, 500);
 
   const safeTag: NoteTag | 'All' | undefined = normalizeTag(tag);
-  const effectiveTag: NoteTag | undefined =
-    safeTag && safeTag !== 'All' ? safeTag : undefined;
+  const effectiveTag: NoteTag | undefined = safeTag && safeTag !== 'All' ? safeTag : undefined;
 
+  // сбрасываем страницу при смене фильтра
   useEffect(() => {
     setPage(1);
   }, [effectiveTag]);
 
-  const {
-    data = initialData,
-    isError,
-    error,
-    isFetching,
-  } = useQuery<NotesResponse, AxiosError>({
+  // запрос
+  const { data, isError, error, isFetching } = useQuery<NotesResponse, AxiosError>({
     queryKey: ['notes', { page, search: debouncedSearch.trim(), tag: effectiveTag }],
     queryFn: () =>
       getNotes({
@@ -52,17 +48,22 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
     placeholderData: (prev) => prev,
   });
 
-  const handleSearch = (query: string) => {
-    setPage(1);
-    setSearch(query);
-  };
+  // безопасный массив заметок
+  const notes = useMemo(() => {
+    const list = data?.notes;
+    return Array.isArray(list) ? list : [];
+  }, [data]);
 
   if (isError) {
     console.error('Failed to load notes', {
       status: error?.response?.status,
       data: error?.response?.data,
     });
-    return <p style={{ color: 'red' }}>Could not fetch the list of notes. Please try again later.</p>;
+    return (
+      <p style={{ color: 'red' }}>
+        Could not fetch the list of notes. Please try again later.
+      </p>
+    );
   }
 
   const title = !safeTag || safeTag === 'All' ? 'All notes' : `${safeTag} notes`;
@@ -73,8 +74,13 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
         <h2 className={css.title}>{title}</h2>
 
         <div className={css.actions}>
-          <SearchBox onSearch={handleSearch} />
-          <Link href="/notes/action/create" className={css.button} data-testid="create-note-link" prefetch={false}>
+          <SearchBox onSearch={(q) => { setPage(1); setSearch(q); }} />
+          <Link
+            href="/notes/action/create"
+            className={css.button}
+            data-testid="create-note-link"
+            prefetch={false}
+          >
             Create note +
           </Link>
         </div>
@@ -82,10 +88,14 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
 
       {isFetching && <p style={{ opacity: 0.6, marginBottom: 8 }}>Searching…</p>}
 
-      {data.notes.length > 0 ? <NoteList notes={data.notes} /> : <p>No notes found.</p>}
+      {notes.length > 0 ? <NoteList notes={notes} /> : <p>No notes found.</p>}
 
-      {Math.max(1, data.totalPages) > 1 && (
-        <Pagination currentPage={page} totalPages={Math.max(1, data.totalPages)} onPageChange={(p) => setPage(p)} />
+      {Math.max(1, data?.totalPages ?? 1) > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={Math.max(1, data?.totalPages ?? 1)}
+          onPageChange={(p) => setPage(p)}
+        />
       )}
     </section>
   );
