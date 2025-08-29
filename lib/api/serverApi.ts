@@ -7,21 +7,10 @@ import type { Note, NoteTag, NewNote } from "@/types/note";
 
 export const PER_PAGE = 12 as const;
 
-export type NotesResponse = {
-  notes: Note[];
-  totalPages: number;
-  page: number;
-};
+export type NotesResponse = { notes: Note[]; totalPages: number; page: number };
+type FetchNotesParams = { page: number; search?: string; tag?: NoteTag | "All" };
 
-type FetchNotesParams = {
-  page: number;
-  search?: string;
-  tag?: NoteTag | "All";
-};
-
-const withCookie = async () => ({
-  headers: { Cookie: (await cookies()).toString() },
-});
+const withCookie = async () => ({ headers: { Cookie: (await cookies()).toString() } });
 
 export async function serverGetSession(): Promise<AxiosResponse<User | undefined>> {
   return api.get<User | undefined>("/auth/session", {
@@ -35,8 +24,7 @@ export async function serverGetMe(): Promise<User | null> {
     ...(await withCookie()),
     validateStatus: () => true,
   });
-  if (res.status === 200 && res.data) return res.data;
-  return null;
+  return res.status === 200 ? res.data : null;
 }
 
 export async function serverUpdateMe(payload: Partial<User>): Promise<User> {
@@ -71,7 +59,6 @@ export async function serverFetchNotes(params: FetchNotesParams): Promise<NotesR
   const s = params.search?.trim();
   if (s) query.search = s;
   if (params.tag && params.tag !== "All") query.tag = params.tag;
-
   const { data } = await api.get("/notes", { ...(await withCookie()), params: query, validateStatus: () => true });
   return normalizeListResponse(data, params.page);
 }
@@ -81,8 +68,8 @@ export async function serverFetchNoteById(noteId: string): Promise<Note | null> 
     ...(await withCookie()),
     validateStatus: () => true,
   });
-  const data = res.data as any;
   if (res.status >= 400) return null;
+  const data = res.data as any;
   return data?.note ?? (data as Note);
 }
 

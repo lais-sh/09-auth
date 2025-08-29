@@ -1,4 +1,3 @@
-
 import css from "./page.module.css";
 import { serverGetMe } from "@/lib/api/serverApi";
 import type { Metadata } from "next";
@@ -17,6 +16,9 @@ export default async function ProfilePage() {
   const user = await serverGetMe();
   if (!user) redirect("/sign-in");
 
+  const src = user.avatar || "/avatar-placeholder.png";
+  const isExternal = /^https?:\/\//.test(src);
+
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -26,15 +28,18 @@ export default async function ProfilePage() {
             Edit Profile
           </Link>
         </div>
+
         <div className={css.avatarWrapper}>
           <Image
-            src={user.avatar || "/avatar-placeholder.png"}
+            src={src}
             alt="User Avatar"
             width={120}
             height={120}
             className={css.avatar}
+            unoptimized={isExternal}
           />
         </div>
+
         <div className={css.profileInfo}>
           <p>Username: {user.username}</p>
           <p>Email: {user.email}</p>
