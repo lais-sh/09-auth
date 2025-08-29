@@ -1,8 +1,12 @@
+
 import css from "./page.module.css";
 import { serverGetMe } from "@/lib/api/serverApi";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -11,30 +15,29 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const user = await serverGetMe();
+  if (!user) redirect("/sign-in");
 
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <div className={css.header}>
           <h1 className={css.formTitle}>Profile Page</h1>
-          <Link href="/profile/edit" className={css.editProfileButton} prefetch={false}>
+          <Link href="/profile/edit" prefetch={false} className={css.editProfileButton}>
             Edit Profile
           </Link>
         </div>
-
         <div className={css.avatarWrapper}>
           <Image
-            src={user?.avatar || "/avatar-placeholder.png"}
+            src={user.avatar || "/avatar-placeholder.png"}
             alt="User Avatar"
             width={120}
             height={120}
             className={css.avatar}
           />
         </div>
-
         <div className={css.profileInfo}>
-          <p>Username: {user?.username ?? "your_username"}</p>
-          <p>Email: {user?.email ?? "your_email@example.com"}</p>
+          <p>Username: {user.username}</p>
+          <p>Email: {user.email}</p>
         </div>
       </div>
     </main>
