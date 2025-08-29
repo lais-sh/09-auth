@@ -1,58 +1,55 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { api } from "../../api";
-import { parse as parseCookie } from "cookie";
+import { parse } from "cookie";
 import { isAxiosError } from "axios";
+import { logErrorResponse } from "../../_utils/utils";
 
 export async function GET() {
   try {
-    const reqCookies = await cookies();
-
-    const accessToken = reqCookies.get("accessToken")?.value;
-    const refreshToken = reqCookies.get("refreshToken")?.value;
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+    const refreshToken = cookieStore.get("refreshToken")?.value;
 
     if (accessToken) {
-      return NextResponse.json({ success: true }, { status: 200 });
+      return NextResponse.json({ success: true });
     }
 
     if (refreshToken) {
-      const apiRes = await api.get("/auth/session", {
-        headers: { Cookie: reqCookies.toString() },
-        validateStatus: () => true,
+      const apiRes = await api.get("auth/session", {
+        headers: {
+          Cookie: cookieStore.toString(),
+        },
       });
 
-      const res = NextResponse.json(
-        { success: apiRes.status < 400 },
-        { status: 200 }
-      );
+      const setCookie = apiRes.headers["set-cookie"];
 
-      const setCookieHeader = apiRes.headers["set-cookie"];
-      if (setCookieHeader) {
-        const list = Array.isArray(setCookieHeader)
-          ? setCookieHeader
-          : [setCookieHeader];
+      if (setCookie) {
+        const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+        for (const cookieStr of cookieArray) {
+          const parsed = parse(cookieStr);
 
-        for (const raw of list) {
-          const c = parseCookie(raw);
-          const opts: Parameters<typeof res.cookies.set>[2] = {
-            path: c.path,
+          const options = {
+            expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
+            path: parsed.Path,
+            maxAge: Number(parsed["Max-Age"]),
           };
-          if (c.expires) opts.expires = new Date(c.expires);
-          if (c["max-age"]) opts.maxAge = Number(c["max-age"]);
 
-          if (c.accessToken) res.cookies.set("accessToken", c.accessToken, opts);
-          if (c.refreshToken) res.cookies.set("refreshToken", c.refreshToken, opts);
+          if (parsed.accessToken)
+            cookieStore.set("accessToken", parsed.accessToken, options);
+          if (parsed.refreshToken)
+            cookieStore.set("refreshToken", parsed.refreshToken, options);
         }
+        return NextResponse.json({ success: true }, { status: 200 });
       }
-
-      return res;
     }
-
     return NextResponse.json({ success: false }, { status: 200 });
   } catch (error) {
     if (isAxiosError(error)) {
+      logErrorResponse(error.response?.data);
       return NextResponse.json({ success: false }, { status: 200 });
     }
+    logErrorResponse({ message: (error as Error).message });
     return NextResponse.json({ success: false }, { status: 200 });
   }
 }
