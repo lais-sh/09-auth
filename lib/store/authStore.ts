@@ -7,10 +7,12 @@ type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
   isAuthChecked: boolean;
+
   setUser: (user: User) => void;
+  clearAuth: () => void;
   clearIsAuthenticated: () => void;
   updateUser: (patch: Partial<User>) => void;
-  markChecked: () => void; 
+  markChecked: () => void;
 };
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -19,6 +21,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   isAuthChecked: false,
 
   setUser: (user) => set({ user, isAuthenticated: true }),
+  clearAuth: () => set({ user: null, isAuthenticated: false }),
   clearIsAuthenticated: () => set({ user: null, isAuthenticated: false }),
   updateUser: (patch) =>
     set((state) => (state.user ? { user: { ...state.user, ...patch } } : state)),

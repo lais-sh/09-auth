@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import css from './AuthNavigation.module.css';
-import { useAuthStore } from '@/lib/store/authStore';
-import { clientLogout } from '@/lib/api/clientApi';
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import css from "./AuthNavigation.module.css";
+import { useAuthStore } from "@/lib/store/authStore";
+import { clientLogout } from "@/lib/api/clientApi";
 
 export default function AuthNavigation() {
   const router = useRouter();
@@ -18,14 +18,13 @@ export default function AuthNavigation() {
     () => (s: ReturnType<typeof useAuthStore.getState>) => ({
       isAuthenticated: s.isAuthenticated,
       user: s.user,
-      clearIsAuthenticated: s.clearIsAuthenticated,
-      isAuthChecked: (s as any).isAuthChecked ?? true,
+      clearAuth: s.clearAuth, 
+      isAuthChecked: s.isAuthChecked ?? true,
     }),
     []
   );
 
-  const { isAuthenticated, user, clearIsAuthenticated, isAuthChecked } =
-    useAuthStore(selector);
+  const { isAuthenticated, user, clearAuth, isAuthChecked } = useAuthStore(selector);
 
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -35,13 +34,13 @@ export default function AuthNavigation() {
     try {
       await clientLogout();
     } catch {
-      // ignore
+      /* ignore */
     } finally {
-      clearIsAuthenticated();
+      clearAuth();
       router.replace(`/sign-in?from=${encodeURIComponent(pathname)}` as any);
       router.refresh();
     }
-  }, [loggingOut, clearIsAuthenticated, router, pathname]);
+  }, [loggingOut, clearAuth, router, pathname]);
 
   if (!hydrated || !isAuthChecked) return null;
 
@@ -62,7 +61,7 @@ export default function AuthNavigation() {
             disabled={loggingOut}
             aria-busy={loggingOut}
           >
-            {loggingOut ? 'Logging out…' : 'Logout'}
+            {loggingOut ? "Logging out…" : "Logout"}
           </button>
         </li>
       </>
