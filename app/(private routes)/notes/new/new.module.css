@@ -1,0 +1,58 @@
+.mainContent {
+  padding: 32px 24px;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.formTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.formGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.input, .textarea, .select {
+  width: 100%;
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.submitButton {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.error {
+  color: #fca5a5;
+  margin-top: 4px;
+}

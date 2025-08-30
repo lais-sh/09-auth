@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clientCreateNote as createNote } from "@/lib/api/clientApi";
 import type { NewNote } from "@/types/note";
-import css from "../page.module.css";
+import styles from "./new.module.css";
 
 export default function NewNote() {
   const router = useRouter();
@@ -18,10 +18,9 @@ export default function NewNote() {
     e.preventDefault();
     setSaving(true);
     setError(null);
-
     try {
-      const note = await createNote({ title, content, tag });
-      router.replace("/notes");
+      await createNote({ title, content, tag });
+      router.replace("/notes"); 
       router.refresh();
     } catch (err: any) {
       setError(err?.message || "Failed to create note");
@@ -31,23 +30,23 @@ export default function NewNote() {
   }
 
   return (
-    <form className={css.form} onSubmit={onSubmit}>
-      <div className={css.formGroup}>
+    <form className={styles.form} onSubmit={onSubmit}>
+      <div className={styles.formGroup}>
         <label htmlFor="title">Title</label>
         <input
           id="title"
-          className={css.input}
+          className={styles.input}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
       </div>
 
-      <div className={css.formGroup}>
+      <div className={styles.formGroup}>
         <label htmlFor="content">Content</label>
         <textarea
           id="content"
-          className={css.textarea}
+          className={styles.textarea}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={6}
@@ -55,11 +54,11 @@ export default function NewNote() {
         />
       </div>
 
-      <div className={css.formGroup}>
+      <div className={styles.formGroup}>
         <label htmlFor="tag">Tag</label>
         <select
           id="tag"
-          className={css.select}
+          className={styles.select}
           value={tag}
           onChange={(e) => setTag(e.target.value as NewNote["tag"])}
         >
@@ -71,13 +70,13 @@ export default function NewNote() {
         </select>
       </div>
 
-      <div className={css.actions}>
-        <button type="submit" className={css.submitButton} disabled={saving}>
+      <div className={styles.actions}>
+        <button type="submit" className={styles.submitButton} disabled={saving}>
           {saving ? "Saving..." : "Create"}
         </button>
       </div>
 
-      {error && <p className={css.error}>{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
     </form>
   );
 }

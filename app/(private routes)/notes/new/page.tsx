@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import css from "../page.module.css";
+import styles from "./new.module.css";
 import NewNote from "./NewNote.client";
 
 export const metadata: Metadata = {
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function NewNotePage() {
   return (
-    <main className={css.mainContent}>
-      <h1 className={css.formTitle}>Create note</h1>
+    <main className={styles.mainContent}>
+      <h1 className={styles.formTitle}>Create note</h1>
       <NewNote />
     </main>
   );
