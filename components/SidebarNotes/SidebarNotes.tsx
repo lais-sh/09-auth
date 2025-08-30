@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import type { UrlObject } from 'url';
 import styles from './SidebarNotes.module.css';
 
 interface SidebarNotesProps {
@@ -13,18 +12,17 @@ export default function SidebarNotes({ categories }: SidebarNotesProps) {
   const searchParams = useSearchParams();
   const activeTag = searchParams.get('tag');
 
-  const makeHref = (tag?: string): UrlObject => {
+  const makeHref = (tag?: string) => {
     const query: Record<string, string> = { page: '1' };
     const trimmed = tag?.trim();
     if (trimmed) query.tag = trimmed;
-    return { pathname: '/notes', query };
+    return { pathname: '/notes/filter', query };
   };
 
   return (
     <nav className={styles.sidebar} aria-label="Filter notes by tag">
       <ul className={styles.list}>
         <MenuItem href={makeHref()} label="All notes" active={!activeTag} />
-
         {categories.map((category) => {
           const label = category.trim();
           const href = makeHref(label);
@@ -38,13 +36,15 @@ export default function SidebarNotes({ categories }: SidebarNotesProps) {
   );
 }
 
-interface MenuItemProps {
-  href: UrlObject; 
+function MenuItem({
+  href,
+  label,
+  active,
+}: {
+  href: { pathname: string; query?: Record<string, string> };
   label: string;
   active?: boolean;
-}
-
-function MenuItem({ href, label, active }: MenuItemProps) {
+}) {
   return (
     <li className={`${styles.item} ${active ? styles.active : ''}`}>
       <Link

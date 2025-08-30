@@ -50,13 +50,12 @@ export default function TagsMenu() {
     if (tag) params.set('tag', tag);
     else params.delete('tag');
 
-    const queryObj: Record<string, string> = {};
-    params.forEach((value, key) => {
-      if (value !== '') queryObj[key] = value;
-    });
+    const queryObj = Object.fromEntries(
+      [...params.entries()].filter(([, v]) => v !== '')
+    ) as Record<string, string>;
 
     return {
-      pathname: '/notes' as const,
+      pathname: '/notes/filter' as const,
       query: Object.keys(queryObj).length ? queryObj : undefined,
     };
   };

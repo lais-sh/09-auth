@@ -10,11 +10,11 @@ export default function FilterLayout({ children, sidebar }: LayoutProps) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 24 }}>
       <aside>
-        <Suspense fallback={null}>
-          {sidebar}
-        </Suspense>
+        <Suspense fallback={null}>{sidebar}</Suspense>
       </aside>
-      <main>{children}</main>
+      <main>
+        <Suspense fallback={null}>{children}</Suspense>
+      </main>
     </div>
   );
 }

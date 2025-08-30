@@ -1,3 +1,5 @@
+"use client";
+
 import TagsMenu from "@/components/TagsMenu/TagsMenu";
 
 export default function Sidebar() {

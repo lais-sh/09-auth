@@ -27,7 +27,6 @@ export default function NotesClient() {
   const [tag, setTag] = useState(tagFromUrl);
   const [page, setPage] = useState(pageFromUrl);
 
-  // синк URL с debounce
   useEffect(() => {
     const h = setTimeout(() => {
       const qs = new URLSearchParams();
@@ -42,12 +41,10 @@ export default function NotesClient() {
     return () => clearTimeout(h);
   }, [search, tag, page, pathname, router]);
 
-  // подхватываем изменения из адресной строки
   useEffect(() => {
     setSearch(searchFromUrl);
     setTag(tagFromUrl);
     setPage(pageFromUrl);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchFromUrl, tagFromUrl, pageFromUrl]);
 
   const queryKey = useMemo(
@@ -65,13 +62,9 @@ export default function NotesClient() {
         search: search.trim() || undefined,
         tag: tag.trim() || undefined,
       }),
-    // v5: вместо keepPreviousData используем placeholderData (можно функцией)
     placeholderData: () => ({ notes: [], totalPages: 1, page }),
-    // если хочешь держать старые данные пока грузятся новые:
-    // staleTime: 0, gcTime: 5 * 60 * 1000, // опционально
   });
 
-  // data может быть undefined (placeholderData не делает DefinedUseQueryResult)
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 1;
   const currentPage = data?.page ?? page;

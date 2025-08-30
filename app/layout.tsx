@@ -63,14 +63,15 @@ export default function RootLayout({ children, modal }: RootLayoutProps) {
     <html lang="uk">
       <body className={roboto.variable}>
         <TanStackProvider>
-          <AuthProvider>
-            <Suspense fallback={null}>
+          {/* Накрываем весь AuthProvider Suspense-ом */}
+          <Suspense fallback={null}>
+            <AuthProvider>
               <Header />
-            </Suspense>
-            <main>{children}</main>
-            {modal}
-            <Footer />
-          </AuthProvider>
+              <main>{children}</main>
+              {modal}
+              <Footer />
+            </AuthProvider>
+          </Suspense>
         </TanStackProvider>
       </body>
     </html>

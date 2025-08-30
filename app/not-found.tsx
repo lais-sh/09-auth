@@ -1,7 +1,12 @@
+import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 const siteUrl =
-  (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.startsWith("http")
+  (process.env.NEXT_PUBLIC_API_URL &&
+  process.env.NEXT_PUBLIC_API_URL.startsWith("http")
     ? process.env.NEXT_PUBLIC_API_URL
     : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -15,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Page Not Found - NoteHub",
     description: "Oops! The page you are looking for does not exist.",
-    url: "/not-found", // относительный URL корректен при наличии metadataBase
+    url: "/not-found",
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
     siteName: "NoteHub",
     type: "website",
@@ -26,16 +31,25 @@ export const metadata: Metadata = {
     description: "Oops! The page you are looking for does not exist.",
     images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
   },
-  alternates: {
-    canonical: "/not-found",
-  },
+  alternates: { canonical: "/not-found" },
 };
 
-export default function NotFound() {
+function NotFoundContent() {
   return (
     <main style={{ padding: "40px 24px" }}>
       <h1>Page not found</h1>
       <p>The page you&apos;re looking for doesn&apos;t exist.</p>
+      <p>
+        <Link href="/" prefetch={false}>Go home</Link>
+      </p>
     </main>
+  );
+}
+
+export default function NotFound() {
+  return (
+    <Suspense fallback={null}>
+      <NotFoundContent />
+    </Suspense>
   );
 }
