@@ -1,14 +1,13 @@
 "use client";
 
-import { Suspense } from "react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import css from "./page.module.css";
-import { login } from "@/lib/api/clientApi";
+import { clientLogin as login } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
-const DEFAULT_AFTER_LOGIN: Route = "/profile";
+const DEFAULT_AFTER_LOGIN: Route = "/notes";
 
 function resolveRedirect(sp: ReturnType<typeof useSearchParams>): Route {
   const raw = sp.get("from");
@@ -21,9 +20,7 @@ function resolveRedirect(sp: ReturnType<typeof useSearchParams>): Route {
     if (p === "/profile" || p === "/notes" || p.startsWith("/notes/")) {
       return p as Route;
     }
-  } catch {
-    /* ignore */
-  }
+  } catch {}
   return DEFAULT_AFTER_LOGIN;
 }
 
@@ -54,28 +51,26 @@ export default function SignInPage() {
   }
 
   return (
-    <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-      <main className={css.mainContent}>
-        <form className={css.form} onSubmit={onSubmit}>
-          <h1 className={css.formTitle}>Sign in</h1>
+    <main className={css.mainContent}>
+      <form className={css.form} onSubmit={onSubmit}>
+        <h1 className={css.formTitle}>Sign in</h1>
 
-          <div className={css.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" name="email" className={css.input} required />
-          </div>
+        <div className={css.formGroup}>
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" name="email" className={css.input} required />
+        </div>
 
-          <div className={css.formGroup}>
-            <label htmlFor="password">Password</label>
-            <input id="password" type="password" name="password" className={css.input} required />
-          </div>
+        <div className={css.formGroup}>
+          <label htmlFor="password">Password</label>
+          <input id="password" type="password" name="password" className={css.input} required />
+        </div>
 
-          <div className={css.actions}>
-            <button type="submit" className={css.submitButton}>Log in</button>
-          </div>
+        <div className={css.actions}>
+          <button type="submit" className={css.submitButton}>Log in</button>
+        </div>
 
-          {error && <p className={css.error}>{error}</p>}
-        </form>
-      </main>
-    </Suspense>
+        {error && <p className={css.error}>{error}</p>}
+      </form>
+    </main>
   );
 }
