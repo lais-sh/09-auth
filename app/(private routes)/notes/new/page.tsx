@@ -1,17 +1,24 @@
+// app/(private-routes)/notes/new/page.tsx
 import type { Metadata } from "next";
-import styles from "./new.module.css";
-import NewNote from "./NewNote.client";
+import { redirect } from "next/navigation";
+import { serverGetMe } from "@/lib/api/serverApi";
+import NoteForm from "@/components/NoteForm/NoteForm";
 
 export const metadata: Metadata = {
-  title: "Create note",
+  title: "New note",
   description: "Create a new note",
 };
 
-export default function NewNotePage() {
+export default async function NewNotePage() {
+  const me = await serverGetMe();
+  if (!me) {
+    redirect("/sign-in?from=/notes/new");
+  }
+
   return (
-    <main className={styles.mainContent}>
-      <h1 className={styles.formTitle}>Create note</h1>
-      <NewNote />
+    <main style={{ padding: "24px" }}>
+      <h1 style={{ marginBottom: 16 }}>Create a note</h1>
+      <NoteForm />
     </main>
   );
 }

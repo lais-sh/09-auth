@@ -19,7 +19,7 @@ export default function AuthNavigation() {
     () => (s: AuthState) => ({
       isAuthenticated: s.isAuthenticated,
       user: s.user,
-      clearAuth: s.clearAuth,
+      clearAuth: s.clearAuth,  
       isAuthChecked: s.isAuthChecked,
     }),
     []
@@ -35,7 +35,6 @@ export default function AuthNavigation() {
     try {
       await clientLogout();
     } catch {
-      /* ignore network/API errors on logout */
     } finally {
       clearAuth();
       router.replace((`/sign-in?from=${encodeURIComponent(pathname)}`) as any);
