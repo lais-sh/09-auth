@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import css from "./AuthNavigation.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
+import type { AuthState } from "@/lib/store/authStore";
 import { clientLogout } from "@/lib/api/clientApi";
 
 export default function AuthNavigation() {
@@ -15,11 +16,11 @@ export default function AuthNavigation() {
   useEffect(() => setHydrated(true), []);
 
   const selector = useMemo(
-    () => (s: ReturnType<typeof useAuthStore.getState>) => ({
+    () => (s: AuthState) => ({
       isAuthenticated: s.isAuthenticated,
       user: s.user,
-      clearAuth: s.clearAuth, 
-      isAuthChecked: s.isAuthChecked ?? true,
+      clearAuth: s.clearAuth,
+      isAuthChecked: s.isAuthChecked,
     }),
     []
   );
@@ -34,11 +35,12 @@ export default function AuthNavigation() {
     try {
       await clientLogout();
     } catch {
-      /* ignore */
+      /* ignore network/API errors on logout */
     } finally {
       clearAuth();
-      router.replace(`/sign-in?from=${encodeURIComponent(pathname)}` as any);
+      router.replace((`/sign-in?from=${encodeURIComponent(pathname)}`) as any);
       router.refresh();
+      setLoggingOut(false);
     }
   }, [loggingOut, clearAuth, router, pathname]);
 

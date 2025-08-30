@@ -18,8 +18,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const fromParam = sp.get("from") ?? "";
 
   const { setUser, clearAuth, markChecked, isAuthChecked } = useAuthStore();
-
-  const mounted = useRef(true);
+  const mounted = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -33,19 +32,17 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
           setUser(user);
 
           if (isAuthRoute(pathname)) {
-            const dest =
-              fromParam && fromParam.startsWith("/")
-                ? (fromParam as Route)
-                : ("/profile" as Route);
-            if (dest !== pathname) router.replace(dest);
+            const dest: Route =
+              fromParam && fromParam.startsWith("/") ? (fromParam as Route) : ("/profile" as Route);
+            if (dest !== (pathname as Route)) router.replace(dest);
             return;
           }
         } else {
           clearAuth();
 
           if (isPrivate(pathname)) {
-            const dest = `/sign-in?from=${encodeURIComponent(pathname)}` as Route;
-            if (dest !== pathname) router.replace(dest);
+            const dest = (`/sign-in?from=${encodeURIComponent(pathname)}`) as Route;
+            if (dest !== (pathname as Route)) router.replace(dest);
             return;
           }
         }

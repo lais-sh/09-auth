@@ -29,12 +29,10 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
   const safeTag: NoteTag | 'All' | undefined = normalizeTag(tag);
   const effectiveTag: NoteTag | undefined = safeTag && safeTag !== 'All' ? safeTag : undefined;
 
-  // сбрасываем страницу при смене фильтра
   useEffect(() => {
     setPage(1);
   }, [effectiveTag]);
 
-  // запрос
   const { data, isError, error, isFetching } = useQuery<NotesResponse, AxiosError>({
     queryKey: ['notes', { page, search: debouncedSearch.trim(), tag: effectiveTag }],
     queryFn: () =>
@@ -48,7 +46,6 @@ export default function NotesClient({ initialData, tag }: NotesClientProps) {
     placeholderData: (prev) => prev,
   });
 
-  // безопасный массив заметок
   const notes = useMemo(() => {
     const list = data?.notes;
     return Array.isArray(list) ? list : [];
