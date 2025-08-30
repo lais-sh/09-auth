@@ -13,38 +13,49 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const user = await serverGetMe();
-  if (!user) redirect("/sign-in");
+  try {
+    const user = await serverGetMe();
 
-  const src = user.avatar || "/avatar-placeholder.png";
-  const isExternal = /^https?:\/\//.test(src);
+    if (!user) {
+      redirect("/sign-in?from=/profile");
+    }
 
-  return (
-    <main className={css.mainContent}>
-      <div className={css.profileCard}>
-        <div className={css.header}>
-          <h1 className={css.formTitle}>Profile Page</h1>
-          <Link href="/profile/edit" prefetch={false} className={css.editProfileButton}>
-            Edit Profile
-          </Link>
+    const src = user.avatar || "/avatar-placeholder.png";
+    const isExternal = /^https?:\/\//.test(src);
+
+    return (
+      <main className={css.mainContent}>
+        <div className={css.profileCard}>
+          <div className={css.header}>
+            <h1 className={css.formTitle}>Profile Page</h1>
+            <Link
+              href="/profile/edit"
+              prefetch={false}
+              className={css.editProfileButton}
+            >
+              Edit Profile
+            </Link>
+          </div>
+
+          <div className={css.avatarWrapper}>
+            <Image
+              src={src}
+              alt="User Avatar"
+              width={120}
+              height={120}
+              className={css.avatar}
+              unoptimized={isExternal}
+            />
+          </div>
+
+          <div className={css.profileInfo}>
+            <p>Username: {user.username ?? "Unknown"}</p>
+            <p>Email: {user.email ?? "Unknown"}</p>
+          </div>
         </div>
-
-        <div className={css.avatarWrapper}>
-          <Image
-            src={src}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-            unoptimized={isExternal}
-          />
-        </div>
-
-        <div className={css.profileInfo}>
-          <p>Username: {user.username}</p>
-          <p>Email: {user.email}</p>
-        </div>
-      </div>
-    </main>
-  );
+      </main>
+    );
+  } catch {
+    redirect("/sign-in?from=/profile");
+  }
 }
