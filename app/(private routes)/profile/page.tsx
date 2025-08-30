@@ -1,5 +1,5 @@
 import css from "./page.module.css";
-import { serverGetMe } from "@/lib/api/serverApi";
+import { serverGetMeSafe } from "@/lib/api/serverApi";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,49 +13,42 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  try {
-    const user = await serverGetMe();
+  const user = await serverGetMeSafe();
+  if (!user) redirect("/sign-in?from=/profile");
 
-    if (!user) {
-      redirect("/sign-in?from=/profile");
-    }
+  const src = user.avatar || "/avatar-placeholder.png";
+  const isExternal = /^https?:\/\//.test(src);
 
-    const src = user.avatar || "/avatar-placeholder.png";
-    const isExternal = /^https?:\/\//.test(src);
-
-    return (
-      <main className={css.mainContent}>
-        <div className={css.profileCard}>
-          <div className={css.header}>
-            <h1 className={css.formTitle}>Profile Page</h1>
-            <Link
-              href="/profile/edit"
-              prefetch={false}
-              className={css.editProfileButton}
-            >
-              Edit Profile
-            </Link>
-          </div>
-
-          <div className={css.avatarWrapper}>
-            <Image
-              src={src}
-              alt="User Avatar"
-              width={120}
-              height={120}
-              className={css.avatar}
-              unoptimized={isExternal}
-            />
-          </div>
-
-          <div className={css.profileInfo}>
-            <p>Username: {user.username ?? "Unknown"}</p>
-            <p>Email: {user.email ?? "Unknown"}</p>
-          </div>
+  return (
+    <main className={css.mainContent}>
+      <div className={css.profileCard}>
+        <div className={css.header}>
+          <h1 className={css.formTitle}>Profile Page</h1>
+          <Link
+            href="/profile/edit"
+            prefetch={false}
+            className={css.editProfileButton}
+          >
+            Edit Profile
+          </Link>
         </div>
-      </main>
-    );
-  } catch {
-    redirect("/sign-in?from=/profile");
-  }
+
+        <div className={css.avatarWrapper}>
+          <Image
+            src={src}
+            alt="User Avatar"
+            width={120}
+            height={120}
+            className={css.avatar}
+            unoptimized={isExternal}
+          />
+        </div>
+
+        <div className={css.profileInfo}>
+          <p>Username: {user.username ?? "Unknown"}</p>
+          <p>Email: {user.email ?? "Unknown"}</p>
+        </div>
+      </div>
+    </main>
+  );
 }

@@ -88,3 +88,12 @@ export async function serverDeleteNote(noteId: string): Promise<void> {
 }
 
 export default serverFetch;
+
+export async function serverGetMeSafe() {
+  try {
+    const me = await serverGetMe();
+    return me ?? null;
+  } catch {
+    return null;
+  }
+}
