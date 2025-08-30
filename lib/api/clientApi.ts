@@ -18,7 +18,6 @@ type FetchNotesParams = {
   tag?: NoteTag | "All" | string;
 };
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
 function toNumber(v: unknown): number | undefined {
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
@@ -111,7 +110,6 @@ function formatAxiosError(err: unknown, fallbackMsg: string) {
   return err instanceof Error ? err : new Error(fallbackMsg);
 }
 
-// ─── auth/users ────────────────────────────────────────────────────────────────
 export async function register(payload: { email: string; password: string }): Promise<User> {
   const { data } = await api.post<User>("/auth/register", payload);
   return data;
@@ -127,8 +125,16 @@ export async function logout(): Promise<void> {
 }
 
 export async function getSession(): Promise<User | null> {
-  const { data } = await api.get<User | undefined>("/auth/session");
-  return data ?? null;
+  const { data } = await api.get<User | null | undefined>("/auth/session");
+  if (
+    data &&
+    typeof (data as any).email === "string" &&
+    typeof (data as any).username === "string" &&
+    typeof (data as any).avatar === "string"
+  ) {
+    return data as User;
+  }
+  return null;
 }
 
 export async function getMe(): Promise<User> {
@@ -141,7 +147,6 @@ export async function updateMe(payload: Partial<User>): Promise<User> {
   return data;
 }
 
-// ─── notes ────────────────────────────────────────────────────────────────────
 export async function getNotes(params: FetchNotesParams): Promise<NotesResponse> {
   const page = Math.max(1, Number(params.page || 1));
   const perPage = params.perPage ?? PER_PAGE;
@@ -184,7 +189,6 @@ export async function deleteNote(noteId: string): Promise<void> {
   await api.delete(`/notes/${noteId}`);
 }
 
-// алиасы для импорта на клиенте
 export {
   register as clientRegister,
   login as clientLogin,

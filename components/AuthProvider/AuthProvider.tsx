@@ -1,57 +1,60 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode, useEffect, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { Route } from 'next';
 import { useAuthStore } from '@/lib/store/authStore';
-import { clientSession, logout } from '@/lib/api/clientApi';
+import { clientSession } from '@/lib/api/clientApi';
 
-const PRIVATE_PREFIXES = ['/profile', '/notes'];
-const isPrivate = (pathname: string) => PRIVATE_PREFIXES.some(p => pathname.startsWith(p));
-const isAuthRoute = (pathname: string) => pathname === '/sign-in' || pathname === '/sign-up';
+const PRIVATE_PREFIXES = ['/profile', '/notes'] as const;
+const isPrivate = (p: string) => PRIVATE_PREFIXES.some((s) => p.startsWith(s));
+const isAuthRoute = (p: string) => p === '/sign-in' || p === '/sign-up';
+const asRoute = (href: string) => href as unknown as Route;
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { setUser, clearIsAuthenticated } = useAuthStore();
-  const [checking, setChecking] = useState(true);
+  const sp = useSearchParams();
+  const fromParam = sp.get('from') ?? '';
+
+  const { setUser, clearIsAuthenticated, markChecked, isAuthChecked } = useAuthStore();
+  const mounted = useRef(true);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const check = async () => {
-      setChecking(true);
+    mounted.current = true;
+    (async () => {
       try {
         const user = await clientSession();
-        if (cancelled) return;
+        if (!mounted.current) return;
 
         if (user) {
           setUser(user);
+
           if (isAuthRoute(pathname)) {
-            router.replace('/profile');
+            const dest = fromParam && fromParam.startsWith('/') ? fromParam : '/profile';
+            router.replace(asRoute(dest));
             return;
           }
         } else {
           clearIsAuthenticated();
+
           if (isPrivate(pathname)) {
-            await logout().catch(() => {});
-            if (!cancelled) router.replace('/sign-in');
+            const dest = `/sign-in?from=${encodeURIComponent(pathname)}`;
+            router.replace(asRoute(dest));
             return;
           }
         }
       } finally {
-        if (!cancelled) setChecking(false);
+        if (mounted.current) markChecked(); 
       }
-    };
+    })();
 
-    void check();
     return () => {
-      cancelled = true;
+      mounted.current = false;
     };
-  }, [pathname, router, setUser, clearIsAuthenticated]);
+  }, [pathname, fromParam, router, setUser, clearIsAuthenticated, markChecked]);
 
-  if (checking) {
-    return <div style={{ padding: 24 }}>Loading...</div>;
-  }
+  if (!isAuthChecked) return null;
 
   return <>{children}</>;
 }

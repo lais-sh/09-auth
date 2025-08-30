@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/sign-in", "/sign-up"];
-const PRIVATE_PREFIXES = ["/profile", "/notes"];
+const PUBLIC_EXACT = ["/sign-in", "/sign-up"] as const;
+const PRIVATE_PREFIXES = ["/profile", "/notes"] as const;
 
-function isPrivate(pathname: string) {
-  return PRIVATE_PREFIXES.some((p) => pathname.startsWith(p));
-}
-function isPublicExact(pathname: string) {
-  return PUBLIC_ROUTES.includes(pathname);
+const isPrivate = (pathname: string) =>
+  PRIVATE_PREFIXES.some((p) => pathname.startsWith(p));
+const isPublicExact = (pathname: string) => PUBLIC_EXACT.includes(pathname as any);
+
+function getSetCookieArray(headers: Headers): string[] {
+  if (typeof headers.getSetCookie === "function") {
+    return headers.getSetCookie() as string[];
+  }
+  const single = headers.get("set-cookie");
+  if (!single) return [];
+  return [single];
 }
 
 export async function middleware(req: NextRequest) {
@@ -29,17 +35,9 @@ export async function middleware(req: NextRequest) {
 
       if (refreshRes.ok) {
         authed = true;
-
-        const anyHeaders = refreshRes.headers as any;
-
-        if (typeof anyHeaders.getSetCookie === "function") {
-          const setCookies: string[] = anyHeaders.getSetCookie();
-          for (const c of setCookies) {
-            res.headers.append("set-cookie", c);
-          }
-        } else {
-          const sc = refreshRes.headers.get("set-cookie");
-          if (sc) res.headers.append("set-cookie", sc);
+        const cookies = getSetCookieArray(refreshRes.headers);
+        for (const c of cookies) {
+          res.headers.append("Set-Cookie", c);
         }
       }
     } catch {

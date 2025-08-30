@@ -11,10 +11,15 @@ export default function Header() {
           <Link href="/" prefetch={false} className={css.link}>
             Home
           </Link>
+
+          <Link href="/notes" prefetch={false} className={css.link}>
+            Notes
+          </Link>
+
           <TagsMenu />
         </div>
 
-          <ul className={css.navigationList}>
+        <ul className={css.navigationList}>
           <AuthNavigation />
         </ul>
       </nav>

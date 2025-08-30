@@ -1,15 +1,36 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import css from './AuthNavigation.module.css';
 import { useAuthStore } from '@/lib/store/authStore';
 import { clientLogout } from '@/lib/api/clientApi';
-import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
 
 export default function AuthNavigation() {
   const router = useRouter();
-  const { isAuthenticated, user, clearIsAuthenticated } = useAuthStore();
+  const pathname = usePathname();
+
+  // ── Hydration guard: убираем «мигание» и предупреждения об SSR/CSR расхождении
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+
+  // Акуратно читаем состояние из стора (с мемуизацией селектора)
+  const selector = useMemo(
+    () => (s: ReturnType<typeof useAuthStore.getState>) => ({
+      isAuthenticated: s.isAuthenticated,
+      user: s.user,
+      clearIsAuthenticated: s.clearIsAuthenticated,
+      // Если у тебя в сторе есть isAuthChecked — используем его,
+      // иначе считаем, что проверка завершена (true), чтобы не ломать проект.
+      isAuthChecked: (s as any).isAuthChecked ?? true,
+    }),
+    []
+  );
+
+  const { isAuthenticated, user, clearIsAuthenticated, isAuthChecked } =
+    useAuthStore(selector);
+
   const [loggingOut, setLoggingOut] = useState(false);
 
   const onLogout = useCallback(async () => {
@@ -18,12 +39,18 @@ export default function AuthNavigation() {
     try {
       await clientLogout();
     } catch {
+      // ignore
     } finally {
       clearIsAuthenticated();
+      router.replace(`/sign-in?from=${encodeURIComponent(pathname)}` as any);
       router.refresh();
-      router.replace('/sign-in');
     }
-  }, [loggingOut, clearIsAuthenticated, router]);
+  }, [loggingOut, clearIsAuthenticated, router, pathname]);
+
+  // Ничего не отображаем, пока:
+  // 1) не прошла гидрация клиента
+  // 2) (опционально) не завершилась проверка сессии
+  if (!hydrated || !isAuthChecked) return null;
 
   if (isAuthenticated) {
     return (
