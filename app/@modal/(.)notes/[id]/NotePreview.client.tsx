@@ -2,24 +2,26 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-
 import Modal from "@/components/Modal/Modal";
-import { getNoteById } from "@/lib/api/clientApi";
+import { clientFetchNoteById } from "@/lib/api/clientApi";
 import type { Note } from "@/types/note";
 import css from "./NotePreview.module.css";
+
 type NotePreviewProps = {
   noteId: string;
   onClose?: () => void;
 };
 
 export default function NotePreview({ noteId, onClose }: NotePreviewProps) {
+  if (noteId === "new") return null;
+
   const router = useRouter();
   const close = onClose ?? (() => router.back());
 
   const { data, error, isError, isPending, isFetching } = useQuery<Note, Error>({
     queryKey: ["note", noteId],
-    queryFn: () => getNoteById(noteId),
-    enabled: Boolean(noteId),
+    queryFn: () => clientFetchNoteById(noteId),
+    enabled: noteId !== "new",
     staleTime: 60_000,
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,
