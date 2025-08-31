@@ -182,8 +182,9 @@ export async function updateNote(noteId: string, payload: Partial<NewNote>): Pro
   return (data as any)?.note ?? (data as Note);
 }
 
-export async function deleteNote(noteId: string): Promise<void> {
-  await api.delete(`/notes/${noteId}`);
+export async function deleteNote(noteId: string): Promise<Note> {
+  const { data } = await api.delete<Note | { note: Note }>(`/notes/${noteId}`);
+  return (data as any)?.note ?? (data as Note);
 }
 
 export {
