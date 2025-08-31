@@ -1,11 +1,12 @@
+
 import type { Metadata } from "next";
-import NotesClient from "./Notes.client";
+import NotesClient from "../Notes.client";
 
 export const metadata: Metadata = {
   title: "All notes | NoteHub",
-  description: "Browse and manage all your notes",
+  description: "Browse and search your notes",
 };
 
-export default function NotesPage() {
+export default function NotesFilterIndexPage() {
   return <NotesClient />;
 }

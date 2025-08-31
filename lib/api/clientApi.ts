@@ -18,10 +18,10 @@ type FetchNotesParams = {
   tag?: NoteTag | "All" | string;
 };
 
-function toNumber(v: unknown): number | undefined {
+const toNumber = (v: unknown): number | undefined => {
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
-}
+};
 
 function normalizeAxiosHeaders(
   headers: Record<string, unknown> | undefined
@@ -30,22 +30,19 @@ function normalizeAxiosHeaders(
   const out: Record<string, string | string[] | undefined> = {};
   for (const [k, v] of Object.entries(headers)) {
     const key = k.toLowerCase();
-    if (Array.isArray(v)) out[key] = v as string[];
-    else if (typeof v === "string") out[key] = v;
-    else if (v != null) out[key] = String(v);
-    else out[key] = undefined;
+    out[key] = Array.isArray(v) ? (v as string[]) : v == null ? undefined : String(v);
   }
   return out;
 }
 
-function getFromHeaders(
+const getFromHeaders = (
   headers: Record<string, string | string[] | undefined> | undefined,
   key: string
-): string | undefined {
+): string | undefined => {
   if (!headers) return undefined;
   const v = headers[key.toLowerCase()];
   return Array.isArray(v) ? v[0] : v;
-}
+};
 
 function pagesFromHeaders(
   headers: Record<string, string | string[] | undefined>,

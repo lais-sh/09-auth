@@ -1,99 +1,83 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useDebounce } from 'use-debounce';
-import { useQuery } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
+import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { clientFetchNotes } from "@/lib/api/clientApi";
+import type { NoteTag } from "@/types/note";
 
-import { getNotes, type NotesResponse } from '@/lib/api/clientApi';
-import type { NoteTag } from '@/types/note';
-import { normalizeTag } from '@/lib/utils/notes';
+export default function NotesClient() {
+  const sp = useSearchParams();
+  const router = useRouter();
 
-import NoteList from '@/components/NoteList/NoteList';
-import Pagination from '@/components/Pagination/Pagination';
-import SearchBox from '@/components/SearchBox/SearchBox';
+  const pageFromUrl = Number(sp.get("page") ?? "1") || 1;
+  const tagFromUrl = sp.get("tag") ?? "All";
+  const searchFromUrl = sp.get("search") ?? "";
 
-import css from './Notes.client.module.css';
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
 
-interface NotesClientProps {
-  initialData: NotesResponse;
-  tag?: string;
-}
+  const tag = useMemo<NoteTag | "All" | string>(() => tagFromUrl, [tagFromUrl]);
 
-export default function NotesClient({ initialData, tag }: NotesClientProps) {
-  const [page, setPage] = useState<number>(initialData?.page ?? 1);
-  const [search, setSearch] = useState<string>('');
-  const [debouncedSearch] = useDebounce(search, 500);
-
-  const safeTag: NoteTag | 'All' | undefined = normalizeTag(tag);
-  const effectiveTag: NoteTag | undefined = safeTag && safeTag !== 'All' ? safeTag : undefined;
-
-  useEffect(() => {
-    setPage(1);
-  }, [effectiveTag]);
-
-  const { data, isError, error, isFetching } = useQuery<NotesResponse, AxiosError>({
-    queryKey: ['notes', { page, search: debouncedSearch.trim(), tag: effectiveTag }],
-    queryFn: () =>
-      getNotes({
-        page,
-        perPage: 12,
-        search: debouncedSearch.trim(),
-        tag: effectiveTag,
-      }),
-    initialData,
-    placeholderData: (prev) => prev,
+  const q = useQuery({
+    queryKey: ["notes", { page, search, tag }],
+    queryFn: async () => {
+      const res = await clientFetchNotes({ page, search, tag });
+      console.log("[notes] response:", res);
+      return res;
+    },
+    retry: false,                 // <— выключаем ретраи
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev, // <— держим прежние данные при пагинации
   });
 
-  const notes = useMemo(() => {
-    const list = data?.notes;
-    return Array.isArray(list) ? list : [];
-  }, [data]);
+  if (q.isPending) {
+    return <div style={{ padding: 24 }}>Loading…</div>;
+  }
 
-  if (isError) {
-    console.error('Failed to load notes', {
-      status: error?.response?.status,
-      data: error?.response?.data,
-    });
+  if (q.isError) {
     return (
-      <p style={{ color: 'red' }}>
-        Could not fetch the list of notes. Please try again later.
-      </p>
+      <div style={{ padding: 24, color: "tomato" }}>
+        Failed to load notes.
+        <pre style={{ whiteSpace: "pre-wrap" }}>
+          {(q.error as Error).message}
+        </pre>
+      </div>
     );
   }
 
-  const title = !safeTag || safeTag === 'All' ? 'All notes' : `${safeTag} notes`;
+  if (!q.data || q.data.notes.length === 0) {
+    return <div style={{ padding: 24 }}>No notes yet.</div>;
+  }
 
   return (
-    <section className={css.app}>
-      <div className={css.toolbar}>
-        <h2 className={css.title}>{title}</h2>
+    <div style={{ padding: 24 }}>
+      {/* здесь ваш SearchBox/список/пагинация */}
+      <ul>
+        {q.data.notes.map((n) => (
+          <li key={n.id}>
+            <b>{n.title}</b> — {n.tag}
+          </li>
+        ))}
+      </ul>
 
-        <div className={css.actions}>
-          <SearchBox onSearch={(q) => { setPage(1); setSearch(q); }} />
-          <Link
-            href="/notes/action/create"
-            className={css.button}
-            data-testid="create-note-link"
-            prefetch={false}
-          >
-            Create note +
-          </Link>
-        </div>
+      <div style={{ marginTop: 12 }}>
+        <button
+          disabled={page <= 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Prev
+        </button>
+        <span style={{ margin: "0 8px" }}>
+          {page} / {q.data.totalPages}
+        </span>
+        <button
+          disabled={page >= q.data.totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next
+        </button>
       </div>
-
-      {isFetching && <p style={{ opacity: 0.6, marginBottom: 8 }}>Searching…</p>}
-
-      {notes.length > 0 ? <NoteList notes={notes} /> : <p>No notes found.</p>}
-
-      {Math.max(1, data?.totalPages ?? 1) > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={Math.max(1, data?.totalPages ?? 1)}
-          onPageChange={(p) => setPage(p)}
-        />
-      )}
-    </section>
+    </div>
   );
 }
