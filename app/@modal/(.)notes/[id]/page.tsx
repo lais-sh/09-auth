@@ -2,6 +2,7 @@ import { HydrationBoundary, dehydrate, QueryClient } from "@tanstack/react-query
 import Modal from "@/components/Modal/Modal";
 import { serverFetchNoteById } from "@/lib/api/serverApi";
 import type { Note } from "@/types/note";
+import NotePreview from "./NotePreview.client";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function NoteModalPage({ params }: PageProps) {
   return (
     <Modal>
       <HydrationBoundary state={dehydrate(qc)}>
+        <NotePreview noteId={id} /> {/* ← теперь контент внутри модалки есть */}
       </HydrationBoundary>
     </Modal>
   );

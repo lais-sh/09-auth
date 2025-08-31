@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { clientGetMe } from "@/lib/api/clientApi";
 
@@ -12,8 +12,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }));
 
   const [booting, setBooting] = useState(true);
+  const ran = useRef(false); 
 
   useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
+
     let cancelled = false;
 
     (async () => {
