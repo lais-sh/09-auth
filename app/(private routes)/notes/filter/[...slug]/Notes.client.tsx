@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import type { Route } from "next";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useEffect } from "react";
@@ -10,6 +11,7 @@ import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
 
+// простой debounce
 function useDebouncedValue<T>(value: T, delay = 400) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -41,12 +43,15 @@ export default function NotesClient() {
     else usp.delete("search");
     if (tag && tag !== "All") usp.set("tag", String(tag));
     else usp.delete("tag");
-    router.replace(`${pathname}?${usp.toString()}`, { scroll: false });
+
+    const href = `${pathname}?${usp.toString()}`;
+    router.replace(href as unknown as Route, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedSearch, tag]);
 
   const q = useQuery<NotesResponse, Error>({
     queryKey: ["notes", { page, search: debouncedSearch, tag }],
-    queryFn: async () =>
+    queryFn: () =>
       clientFetchNotes({
         page,
         perPage: PER_PAGE,
