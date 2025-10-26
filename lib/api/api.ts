@@ -6,6 +6,22 @@ const envOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
 const DEFAULT_SERVER_ORIGIN = "http://127.0.0.1:3000";
 
+// lib/api/api.ts
+const isServer = typeof window === "undefined";
+const envOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+const DEFAULT_SERVER_ORIGIN = "http://127.0.0.1:3000";
+
+// 👇 NEW: prefer Vercel URL when not given an explicit origin
+const vercelOrigin = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : undefined;
+
+const serverOrigin = envOrigin || vercelOrigin || DEFAULT_SERVER_ORIGIN;
+
+const baseURL = isServer ? `${serverOrigin}/api` : "/api";
+
+
 if (isServer && process.env.NODE_ENV === "production" && !envOrigin) {
   console.warn(
     "WARN: NEXT_PUBLIC_API_URL is not set in production. " +
@@ -46,3 +62,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
