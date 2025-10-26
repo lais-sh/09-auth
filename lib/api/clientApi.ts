@@ -187,6 +187,15 @@ export async function deleteNote(noteId: string): Promise<Note> {
   return (data as any)?.note ?? (data as Note);
 }
 
+export async function getMe(): Promise<User> {
+  const { data } = await api.get<User>("/users/me");
+  // Defensive: ensure data looks like a User
+  if (!data || typeof (data as any).email !== 'string') {
+    throw new Error('Not authenticated');
+  }
+  return data;
+}
+
 export {
   register as clientRegister,
   login as clientLogin,
@@ -201,3 +210,4 @@ export {
   deleteNote as clientDeleteNote,
   getNotes as fetchNotes,
 };
+
