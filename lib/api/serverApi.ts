@@ -2,26 +2,25 @@ import "server-only";
 import { cookies } from "next/headers";
 import type { AxiosResponse } from "axios";
 import { api } from "./api";
-import type { User } from "@/types/user";
-import type { Note, NoteTag, NewNote } from "@/types/note";
+// ...
 
-export const PER_PAGE = 12 as const;
-
-export type NotesResponse = { notes: Note[]; totalPages: number; page: number };
-type FetchNotesParams = { page: number; search?: string; tag?: NoteTag | "All" };
-
-const withCookie = async () => ({ headers: { Cookie: (await cookies()).toString() } });
+const cookieHeader = async () => {
+  const store = await cookies();
+  const cookie = store.getAll().map(c => `${c.name}=${c.value}`).join('; ');
+  return { headers: { Cookie: cookie } };
+};
 
 export async function serverGetSession(): Promise<AxiosResponse<User | undefined>> {
   return api.get<User | undefined>("/auth/session", {
-    ...(await withCookie()),
+    ...(await cookieHeader()),
     validateStatus: () => true,
   });
 }
 
+// ...and replace every previous withCookie()/toString() usage:
 export async function serverGetMe(): Promise<User | null> {
   const res = await api.get<User>("/users/me", {
-    ...(await withCookie()),
+    ...(await cookieHeader()),
     validateStatus: () => true,
   });
   return res.status === 200 ? res.data : null;
@@ -96,4 +95,5 @@ export async function serverGetMeSafe() {
   } catch {
     return null;
   }
+
 }
