@@ -5,6 +5,7 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { clientGetMe } from "@/lib/api/clientApi";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
+  const res = await fetch("/api/auth/session", { cache: "no-store" });
   const { setUser, clearAuth, markChecked } = useAuthStore((s) => ({
     setUser: s.setUser,
     clearAuth: s.clearAuth,
@@ -52,3 +53,4 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
+
